@@ -1,0 +1,28 @@
+{
+  "name": "stopgame",
+  "version": "1.0.0",
+  "description": "Stop game",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd server && npm install &&  node server.js",
+    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegovargasg/deploymentTest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/diegovargasg/deploymentTest/issues"
+  },
+  "homepage": "https://github.com/diegovargasg/deploymentTest#readme",
+  "keywords": [
+    "websockets",
+    "game",
+    "reactjs",
+    "socket.io",
+    "expressjs",
+    "hooks"
+  ],
+  "author": "Diego Vargas",
+  "license": "MIT"
+}
