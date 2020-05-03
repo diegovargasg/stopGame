@@ -1,10 +1,10 @@
+//@TODO: migrate this to a class?
 const _ = require("lodash");
 
 const allUsers = [];
 
 function addUser({ socketId, gameId, name, ready }) {
   allUsers.push({ socketId, gameId, name, ready });
-  console.log(allUsers);
 }
 
 function getUser(socketId) {
@@ -33,10 +33,21 @@ function updateUserReady(socketId, ready) {
   _.set(allUsers, `${userIndex}.ready`, ready);
 }
 
+function allUsersReady(gameId) {
+  return (
+    _.size(
+      _.filter(allUsers, (user) => {
+        return user.gameId === gameId && user.ready === true;
+      })
+    ) === getAllUsersByGameId(gameId).length
+  );
+}
+
 module.exports = {
   getAllUsersByGameId,
   getUser,
   addUser,
   removeUser,
   updateUserReady,
+  allUsersReady,
 };

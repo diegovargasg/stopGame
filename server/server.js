@@ -3,6 +3,14 @@ const port = process.env.PORT || "9000";
 const http = require("http");
 const socketIo = require("socket.io");
 const path = require("path");
+const {
+  getUser,
+  addUser,
+  removeUser,
+  getAllUsersByGameId,
+  updateUserReady,
+  allUsersReady,
+} = require("./utils/users");
 const _ = require("lodash");
 
 const app = express();
@@ -14,9 +22,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
-/*Users handling */
-const allUsers = [];
-
 //Run when client connects
 io.on("connection", (socket) => {
   //User has joined a game
@@ -27,57 +32,36 @@ io.on("connection", (socket) => {
     const socketId = socket.id;
 
     //update list of players of that game id
-    allUsers.push({ socketId, gameId, name, ready });
+    addUser({ socketId, gameId, name, ready });
 
     socket.join(gameId);
 
-    io.to(gameId).emit(
-      "allUsers",
-      _.filter(allUsers, (user) => {
-        return user.gameId === gameId;
-      })
-    );
+    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
 
   socket.on("disconnect", () => {
     const socketId = socket.id;
-    const userLeft = _.find(allUsers, (user) => {
-      return user.socketId === socketId;
-    });
+    const user = getUser(socketId);
+    const gameId = _.get(user, "gameId", "");
 
-    _.remove(allUsers, (user) => {
-      return user.socketId === socketId;
-    });
+    removeUser(socket);
 
-    const gameId = _.get(userLeft, "gameId", "");
-    io.to(gameId).emit(
-      "allUsers",
-      _.filter(allUsers, (user) => {
-        return user.gameId === gameId;
-      })
-    );
+    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
 
   //user is ready
-  socket.on("userReady", (data) => {
-    console.log(data);
+  socket.on("userReady", (ready) => {
     const socketId = socket.id;
-    const userReady = _.find(allUsers, (user) => {
-      return user.socketId === socketId;
-    });
-    const userIndex = _.findIndex(allUsers, (user) => {
-      return user.socketId === socketId;
-    });
+    const userReady = getUser(socketId);
     const gameId = _.get(userReady, "gameId", "");
-    console.log(allUsers);
-    _.set(allUsers, `${userIndex}.ready`, data);
-    console.log(allUsers);
-    io.to(gameId).emit(
-      "allUsers",
-      _.filter(allUsers, (user) => {
-        return user.gameId === gameId;
-      })
-    );
+
+    updateUserReady(socketId, ready);
+
+    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+
+    if (allUsersReady(gameId)) {
+      io.to(gameId).emit("startGame", true);
+    }
   });
 });
 
@@ -85,9 +69,3 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
   console.log(`Server running in ${port}`);
 });
-
-function getUser(socketId) {
-  return _.find(allUsers, (user) => {
-    return user.socketId === socketId;
-  });
-}

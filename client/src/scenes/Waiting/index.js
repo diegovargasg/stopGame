@@ -4,8 +4,7 @@ import socketIOClient from "socket.io-client";
 import ListGroup from "react-bootstrap/ListGroup";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
-import Row from "react-bootstrap/Row";
-import Container from "react-bootstrap/Container";
+import { Redirect } from "react-router-dom";
 
 const ENDPOINT = "http://localhost:9000/";
 const socket = socketIOClient(ENDPOINT);
@@ -13,6 +12,7 @@ const socket = socketIOClient(ENDPOINT);
 function Waiting(props) {
   const [players, setPlayers] = useState([]);
   const [player, setPlayer] = useState({});
+  const [startGame, setStartGame] = useState(false);
   const gameId = _.get(props, "location.state.gameId", "");
   const name = _.get(props, "location.state.name", "");
 
@@ -23,9 +23,13 @@ function Waiting(props) {
       const currentPlayer = _.find(data, (player) => {
         return player.socketId === socket.id;
       });
-      console.log(currentPlayer);
       setPlayers(data);
       setPlayer(currentPlayer);
+    });
+
+    socket.on("startGame", (data) => {
+      console.log("startgame", "data");
+      setStartGame(data);
     });
 
     return () => {
@@ -64,6 +68,14 @@ function Waiting(props) {
       >
         {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
       </Button>
+      {startGame && (
+        <Redirect
+          to={{
+            pathname: "/game",
+            state: {},
+          }}
+        />
+      )}
     </React.Fragment>
   );
 }
