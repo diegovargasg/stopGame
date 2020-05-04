@@ -81,7 +81,7 @@ function CreateGame() {
         <Redirect
           to={{
             pathname: "/waiting",
-            state: { name, gameId },
+            state: { name, gameId, categories },
           }}
         />
       )}

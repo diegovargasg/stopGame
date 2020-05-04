@@ -15,6 +15,7 @@ function Waiting(props) {
   const [startGame, setStartGame] = useState(false);
   const gameId = _.get(props, "location.state.gameId", "");
   const name = _.get(props, "location.state.name", "");
+  const categories = _.get(props, "location.state.categories", []);
 
   useEffect(() => {
     socket.emit("joinGame", { gameId, name });
@@ -72,7 +73,7 @@ function Waiting(props) {
         <Redirect
           to={{
             pathname: "/game",
-            state: {},
+            state: { categories },
           }}
         />
       )}
