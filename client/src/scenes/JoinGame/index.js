@@ -26,7 +26,6 @@ function JoinGame() {
 
   return (
     <React.Fragment>
-      <h2>Join game</h2>
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="name">
           <Form.Label>Your name:</Form.Label>
@@ -56,6 +55,7 @@ function JoinGame() {
         <Redirect
           to={{
             pathname: "/waiting",
+            push: true,
             state: { name, gameId },
           }}
         />

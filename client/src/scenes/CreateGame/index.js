@@ -2,6 +2,10 @@ import _ from "lodash";
 import React, { useState, useEffect, useRef } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import Alert from "react-bootstrap/Alert";
+import Col from "react-bootstrap/Col";
 import { Redirect } from "react-router-dom";
 
 function CreateGame() {
@@ -9,36 +13,45 @@ function CreateGame() {
   const [categories, setCategories] = useState([]);
   const [valid, setValid] = useState(false);
   const [name, setName] = useState();
+  const [catAlert, setCatAlert] = useState({ display: "none" });
   const gameId = Math.random().toString(36).substr(2, 6);
   const inputName = useRef(null);
+  const categoriesNames = [
+    "Names",
+    "Animals",
+    "Countries",
+    "Food",
+    "Brands",
+    "Professions",
+    "Objects",
+    "Colors",
+    "Cities",
+    "Songs",
+    "Sports",
+    "Movies",
+  ];
 
   useEffect(() => {}, []);
 
-  const handleCategories = (changeEvent) => {
-    const optionsSelected = [...changeEvent.target.options]
-      .filter((option) => option.selected)
-      .map((option) => option.value);
-
-    if (optionsSelected.length > 5) {
-      changeEvent.target.options[0].selected = false;
-      optionsSelected.splice(0, 1);
-    }
-    setCategories(optionsSelected);
+  const handleCategories = (val) => {
+    setCategories(val);
   };
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
-    if (form.checkValidity() === false) {
+    if (form.checkValidity() === false || categories.length < 5) {
       event.preventDefault();
       event.stopPropagation();
+      setCatAlert({ display: "block" });
+      return false;
     }
+    setCatAlert({ display: "none" });
     setValid(true);
     setName(_.get(inputName, "current.value", ""));
   };
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h2>Create game</h2>
       <Form.Group controlId="name">
         <Form.Label>Your name:</Form.Label>
         <Form.Control
@@ -49,20 +62,33 @@ function CreateGame() {
           ref={inputName}
         />
       </Form.Group>
-      <Form.Group controlId="categories">
-        <Form.Label>Categories: {categories.length}</Form.Label>
-        <Form.Control as="select" multiple onChange={handleCategories}>
-          <option>Names</option>
-          <option>Countries</option>
-          <option>Animals</option>
-          <option>Food</option>
-          <option>Brands</option>
-          <option>Profession</option>
-          <option>Objects</option>
-          <option>Color</option>
-          <option>Songs</option>
-          <option>Sports</option>
-        </Form.Control>
+      <Form.Group className="col">
+        <Form.Label className="row">Select your categories:</Form.Label>
+        <ToggleButtonGroup
+          className="row"
+          type="checkbox"
+          value={categories}
+          onChange={handleCategories}
+        >
+          {categoriesNames.map((category) => {
+            return (
+              <ToggleButton
+                key={category}
+                value={category}
+                className="col-4"
+                variant={categories.includes(category) ? "primary" : "light"}
+                disabled={
+                  !categories.includes(category) && categories.length >= 5
+                }
+              >
+                {category}
+              </ToggleButton>
+            );
+          })}
+        </ToggleButtonGroup>
+        <Alert className="row" variant="danger" style={catAlert}>
+          Please select 5 categories
+        </Alert>
       </Form.Group>
       <Form.Group controlId="rounds">
         <Form.Label>Rounds: {range}</Form.Label>
@@ -81,6 +107,7 @@ function CreateGame() {
         <Redirect
           to={{
             pathname: "/waiting",
+            push: true,
             state: { name, gameId, categories },
           }}
         />

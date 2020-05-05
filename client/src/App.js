@@ -5,13 +5,16 @@ import Waiting from "./scenes/Waiting/";
 import Moderation from "./scenes/Moderation/";
 import Result from "./scenes/Result/";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { createBrowserHistory } from "history";
 import Container from "react-bootstrap/Container";
 
 function App() {
+  const history = createBrowserHistory();
+
   return (
     <div className="App">
       <Container fluid>
-        <Router>
+        <Router history={history}>
           <Switch>
             <Route path="/" exact component={Home} />
             <Route path="/waiting" component={Waiting} />

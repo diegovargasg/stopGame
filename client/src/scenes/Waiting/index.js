@@ -5,11 +5,15 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import { Redirect } from "react-router-dom";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import { useHistory } from "react-router-dom";
 
 const ENDPOINT = "http://localhost:9000/";
 const socket = socketIOClient(ENDPOINT);
 
 function Waiting(props) {
+  const history = useHistory();
   const [players, setPlayers] = useState([]);
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
@@ -61,18 +65,35 @@ function Waiting(props) {
           );
         })}
       </ListGroup>
-      <Button
-        variant={!_.get(player, "ready", false) ? `primary` : `secondary`}
-        size="lg"
-        block
-        onClick={handleReady}
-      >
-        {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
-      </Button>
+      <Row>
+        <Col>
+          <Button
+            variant="light"
+            size="lg"
+            block
+            onClick={() => {
+              history.push("/");
+            }}
+          >
+            Back
+          </Button>
+        </Col>
+        <Col>
+          <Button
+            variant={!_.get(player, "ready", false) ? `primary` : `secondary`}
+            size="lg"
+            block
+            onClick={handleReady}
+          >
+            {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
+          </Button>
+        </Col>
+      </Row>
       {startGame && (
         <Redirect
           to={{
             pathname: "/game",
+            push: true,
             state: { categories },
           }}
         />
