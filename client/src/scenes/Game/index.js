@@ -1,58 +1,105 @@
 import _ from "lodash";
-import React, { useState, useEffect } from "react";
-import Carousel from "react-bootstrap/Carousel";
-import Form from "react-bootstrap/Form";
+import React, { useState, useEffect, useRef } from "react";
+import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
+import Badge from "react-bootstrap/Badge";
+import Form from "react-bootstrap/Form";
 
 function Game(props) {
-  const [index, setIndex] = useState(0);
-  const [categories, setCategories] = useState([]);
+  const [words, setWords] = useState({});
+  const [stopDisabled, setStopDisabled] = useState(true);
+  const [gameEnded, setGameEnded] = useState(false);
+  //const [categories, setCategories] = useState([]);
+  const categories = ["Names", "Animals", "Countries", "Food", "Brands"];
 
-  const divStyle = {
-    color: "black",
-    textAlign: "center",
+  const onAdd = (category, word) => {
+    setWords((words) => ({ ...words, [category]: word }));
   };
 
   useEffect(() => {
-    setCategories(_.get(props, "location.state.categories", []));
-  }, []);
+    if (words.length === 5) {
+      setStopDisabled(false);
+    }
+  });
 
-  const handleContinue = () => {};
-
-  const handleSelect = (selectedIndex, e) => {
-    setIndex(selectedIndex);
+  const handleClick = () => {
+    setGameEnded(true);
   };
 
   return (
     <React.Fragment>
-      <h2>Game</h2>
-      <Carousel
-        interval="240000"
-        indicators={false}
-        activeIndex={index}
-        onSelect={handleSelect}
+      <h5>
+        Words that begins with: <Badge variant="dark">R</Badge>
+      </h5>
+      <Table striped bordered>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Word</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category) => {
+            return (
+              <Category
+                key={category}
+                name={category}
+                onAdd={onAdd}
+                gameEnded={gameEnded}
+              />
+            );
+          })}
+        </tbody>
+      </Table>
+      <Button
+        variant={stopDisabled ? "secondary" : "primary"}
+        disabled={stopDisabled}
+        onClick={handleClick}
+        size="lg"
+        block
       >
-        {categories.map((category) => {
-          return (
-            <Carousel.Item style={divStyle} key={category}>
-              <h3>{category}</h3>
-            </Carousel.Item>
-          );
-        })}
-      </Carousel>
-      <Form>
-        <Form.Group controlId="name">
-          <Form.Label>Your word:</Form.Label>
-          <Form.Control type="text" required minLength="2" maxLength="15" />
-        </Form.Group>
-        <Button
-          className="btn btn-primary btn-lg btn-block"
-          onClick={handleContinue}
-        >
-          Continue
-        </Button>
-      </Form>
+        STOP
+      </Button>
     </React.Fragment>
+  );
+}
+
+export function Category(props) {
+  const [disabled, setDisabled] = useState(true);
+  const input = useRef(null);
+
+  useEffect(() => {
+    if (!disabled) {
+      input.current.focus();
+    }
+  });
+
+  const handleClick = () => {
+    const word = input.current.value;
+    //stores the word
+    if (!disabled && word !== "") {
+      props.onAdd(props.name, word);
+    }
+    setDisabled(!disabled);
+  };
+
+  return (
+    <tr key={props.name}>
+      <td>{props.name}</td>
+      <td>
+        <Form.Control type="text" disabled={disabled} ref={input} />
+      </td>
+      <td align="right">
+        <Button
+          disabled={props.gameEnded}
+          variant={disabled ? "primary" : "success"}
+          onClick={handleClick}
+        >
+          {disabled ? "add" : "save"}
+        </Button>
+      </td>
+    </tr>
   );
 }
 

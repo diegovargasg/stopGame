@@ -31,8 +31,6 @@ function CreateGame() {
     "Movies",
   ];
 
-  useEffect(() => {}, []);
-
   const handleCategories = (val) => {
     setCategories(val);
   };
@@ -60,6 +58,7 @@ function CreateGame() {
           minLength="2"
           maxLength="15"
           ref={inputName}
+          autoComplete="off"
         />
       </Form.Group>
       <Form.Group className="col">

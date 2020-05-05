@@ -7,8 +7,6 @@ import JoinGame from "../../scenes/JoinGame";
 function Home() {
   const [key, setKey] = useState("create");
 
-  useEffect(() => {}, []);
-
   return (
     <Tabs
       id="controlled-tab-example"

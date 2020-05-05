@@ -10,10 +10,10 @@ import Container from "react-bootstrap/Container";
 
 function App() {
   const history = createBrowserHistory();
-
+  const style = { margin: "15px 0" };
   return (
     <div className="App">
-      <Container fluid>
+      <Container fluid style={style}>
         <Router history={history}>
           <Switch>
             <Route path="/" exact component={Home} />
