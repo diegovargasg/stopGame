@@ -30,7 +30,7 @@ io.on("connection", (socket) => {
     const name = _.get(data, "name", "");
     const ready = false;
     const socketId = socket.id;
-
+    console.log(socketId);
     //update list of players of that game id
     addUser({ socketId, gameId, name, ready });
 
@@ -51,6 +51,7 @@ io.on("connection", (socket) => {
 
   //user is ready
   socket.on("userReady", (ready) => {
+    console.log("user is ready");
     const socketId = socket.id;
     const userReady = getUser(socketId);
     const gameId = _.get(userReady, "gameId", "");
@@ -62,6 +63,22 @@ io.on("connection", (socket) => {
     if (allUsersReady(gameId)) {
       io.to(gameId).emit("startGame", true);
     }
+  });
+
+  //User clicks on Stop
+  socket.on("userStop", (data) => {
+    const socketId = socket.id;
+    console.log(socketId);
+    /*const userReady = getUser(socketId);
+    const gameId = _.get(userReady, "gameId", "");
+
+    updateUserReady(socketId, ready);
+
+    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+
+    if (allUsersReady(gameId)) {
+      io.to(gameId).emit("startGame", true);
+    }*/
   });
 });
 

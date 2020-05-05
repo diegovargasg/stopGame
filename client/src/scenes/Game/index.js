@@ -17,13 +17,18 @@ function Game(props) {
   };
 
   useEffect(() => {
-    if (words.length === 5) {
+    if (_.size(words) === 5) {
       setStopDisabled(false);
     }
-  });
+  }, [words]);
+
+  useEffect(() => {
+    //handle sent message to server and moderation
+  }, [gameEnded]);
 
   const handleClick = () => {
     setGameEnded(true);
+    setStopDisabled(true);
   };
 
   return (

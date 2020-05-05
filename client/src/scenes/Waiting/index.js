@@ -33,7 +33,6 @@ function Waiting(props) {
     });
 
     socket.on("startGame", (data) => {
-      console.log("startgame", "data");
       setStartGame(data);
     });
 
