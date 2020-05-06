@@ -1,9 +1,10 @@
 import _ from "lodash";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
+import { SocketContext } from "../../SocketContext";
 
 function Game(props) {
   const [words, setWords] = useState({});
@@ -11,10 +12,17 @@ function Game(props) {
   const [gameEnded, setGameEnded] = useState(false);
   //const [categories, setCategories] = useState([]);
   const categories = ["Names", "Animals", "Countries", "Food", "Brands"];
+  const [socket, setSocket] = useContext(SocketContext);
 
   const onAdd = (category, word) => {
     setWords((words) => ({ ...words, [category]: word }));
   };
+
+  useEffect(() => {
+    socket.on("stopGame", (data) => {
+      console.log("stopped game by ", data);
+    });
+  }, []);
 
   useEffect(() => {
     if (_.size(words) === 5) {
@@ -24,6 +32,9 @@ function Game(props) {
 
   useEffect(() => {
     //handle sent message to server and moderation
+    if (gameEnded) {
+      socket.emit("userStop", "hello world");
+    }
   }, [gameEnded]);
 
   const handleClick = () => {

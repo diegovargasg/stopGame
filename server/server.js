@@ -24,13 +24,13 @@ app.get("*", (req, res) => {
 
 //Run when client connects
 io.on("connection", (socket) => {
+  console.log(`user connected ${socket.id}`);
   //User has joined a game
   socket.on("joinGame", (data) => {
     const gameId = _.get(data, "gameId", "");
     const name = _.get(data, "name", "");
     const ready = false;
     const socketId = socket.id;
-    console.log(socketId);
     //update list of players of that game id
     addUser({ socketId, gameId, name, ready });
 
@@ -43,8 +43,8 @@ io.on("connection", (socket) => {
     const socketId = socket.id;
     const user = getUser(socketId);
     const gameId = _.get(user, "gameId", "");
-
-    removeUser(socket);
+    console.log(`user disconneted ${socketId}`);
+    removeUser(socketId);
 
     io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
@@ -68,17 +68,10 @@ io.on("connection", (socket) => {
   //User clicks on Stop
   socket.on("userStop", (data) => {
     const socketId = socket.id;
-    console.log(socketId);
-    /*const userReady = getUser(socketId);
+    const userReady = getUser(socketId);
     const gameId = _.get(userReady, "gameId", "");
-
-    updateUserReady(socketId, ready);
-
-    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
-
-    if (allUsersReady(gameId)) {
-      io.to(gameId).emit("startGame", true);
-    }*/
+    io.to(gameId).emit("stopGame", socketId);
+    console.log("User stopped", socketId);
   });
 });
 
