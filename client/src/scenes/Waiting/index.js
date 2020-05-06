@@ -6,12 +6,10 @@ import Button from "react-bootstrap/Button";
 import { Redirect } from "react-router-dom";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { useHistory } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import socketIOClient from "socket.io-client";
 
 function Waiting(props) {
-  const history = useHistory();
   const [players, setPlayers] = useState([]);
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
@@ -79,7 +77,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={() => {
-              history.push("/");
+              props.history.push("/");
             }}
           >
             Back

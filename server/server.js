@@ -65,13 +65,22 @@ io.on("connection", (socket) => {
     }
   });
 
-  //User clicks on Stop
-  socket.on("userStop", (data) => {
+  //User finished all words
+  socket.on("userFinished", (data) => {
     const socketId = socket.id;
     const userReady = getUser(socketId);
     const gameId = _.get(userReady, "gameId", "");
-    io.to(gameId).emit("stopGame", socketId);
+    io.to(gameId).emit("gameEnded", socketId);
     console.log("User stopped", socketId);
+  });
+
+  //Sent all the users answers
+  socket.on("userWords", (data) => {
+    const socketId = socket.id;
+    const userReady = getUser(socketId);
+    const gameId = _.get(userReady, "gameId", "");
+
+    console.log(`User ${socketId} words`, data);
   });
 });
 
