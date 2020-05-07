@@ -122,9 +122,12 @@ function Moderation(props) {
       <div className="container-fluid">
         <Row>
           <Col xs={8}>
-            <h2>
-              Moderation for letter <Badge variant="dark">{letter}</Badge>
-            </h2>
+            <h5>
+              Moderation for the letter{" "}
+              <span className="h3">
+                <Badge variant="primary">{letter}</Badge>
+              </span>
+            </h5>
           </Col>
           <Col xs>
             <ProgressBar
@@ -138,7 +141,10 @@ function Moderation(props) {
         </Row>
       </div>
 
-      <Accordion activeKey={categories[activeCat]}>
+      <Accordion
+        activeKey={categories[activeCat]}
+        defaultActiveKey={categories[activeCat]}
+      >
         {categories.map((category) => {
           return (
             <Card key={category}>
