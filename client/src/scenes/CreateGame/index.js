@@ -107,7 +107,7 @@ function CreateGame() {
           to={{
             pathname: "/waiting",
             push: true,
-            state: { name, gameId, categories },
+            state: { name, gameId, categories: categories.sort() },
           }}
         />
       )}

@@ -1,5 +1,6 @@
 import _ from "lodash";
 import React, { useState, useEffect, useRef, useContext } from "react";
+import { Redirect } from "react-router-dom";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Badge from "react-bootstrap/Badge";
@@ -7,15 +8,17 @@ import Form from "react-bootstrap/Form";
 import { SocketContext } from "../../SocketContext";
 
 function Game(props) {
+  const name = _.get(props, "location.state.name", "");
   const categories = _.get(props, "location.state.categories", []);
   const tmpCat = {};
   categories.map((category) => {
     tmpCat[category] = "";
   });
+  const [letter, setLetter] = useState("F");
   const [words, setWords] = useState(tmpCat);
   const [stopBtnDisabled, setStopBtnDisabled] = useState(true);
-  const [gameEnded, setGameEnded] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
+  const [redirect, setRedirect] = useState(false);
 
   const onAdd = (category, word) => {
     setWords((words) => ({ ...words, [category]: word }));
@@ -28,7 +31,7 @@ function Game(props) {
     }
 
     socket.on("gameEnded", (data) => {
-      setGameEnded(data);
+      setRedirect(data);
     });
   }, []);
 
@@ -39,13 +42,12 @@ function Game(props) {
     }
   }, [words]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     //handle sent message to server and moderation
     if (gameEnded) {
-      //@TODO: sanitize words sent
-      socket.emit("userWords", words);
+      socket.emit("userWords", { words, letter });
     }
-  }, [gameEnded]);
+  }, [gameEnded]);*/
 
   const handleClick = () => {
     setStopBtnDisabled(true);
@@ -55,7 +57,7 @@ function Game(props) {
   return (
     <React.Fragment>
       <h5>
-        Words that begins with: <Badge variant="dark">R</Badge>
+        Words that begins with: <Badge variant="dark">{letter}</Badge>
       </h5>
       <Table striped bordered>
         <thead>
@@ -72,7 +74,7 @@ function Game(props) {
                 key={category}
                 name={category}
                 onAdd={onAdd}
-                gameEnded={gameEnded}
+                gameEnded={redirect}
               />
             );
           })}
@@ -87,6 +89,23 @@ function Game(props) {
       >
         STOP
       </Button>
+      {redirect && (
+        <Redirect
+          to={{
+            pathname: "/moderation",
+            push: true,
+            state: {
+              gameData: {
+                socketId: socket.id,
+                words: words,
+                name: name,
+              },
+              letter,
+              categories,
+            },
+          }}
+        />
+      )}
     </React.Fragment>
   );
 }

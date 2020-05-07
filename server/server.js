@@ -1,4 +1,5 @@
 const express = require("express");
+const _ = require("lodash");
 const port = process.env.PORT || "9000";
 const http = require("http");
 const socketIo = require("socket.io");
@@ -11,7 +12,14 @@ const {
   updateUserReady,
   allUsersReady,
 } = require("./utils/users");
-const _ = require("lodash");
+
+const {
+  storeGameIdWords,
+  getGameIdWords,
+  clearGameIdWords,
+  addGame,
+  getCategoriesByGameId,
+} = require("./utils/game");
 
 const app = express();
 const server = http.createServer(app);
@@ -29,13 +37,21 @@ io.on("connection", (socket) => {
   socket.on("joinGame", (data) => {
     const gameId = _.get(data, "gameId", "");
     const name = _.get(data, "name", "");
+    const categories = _.get(data, "categories", []);
     const ready = false;
     const socketId = socket.id;
     //update list of players of that game id
     addUser({ socketId, gameId, name, ready });
 
-    socket.join(gameId);
+    //Is a joiner and needs the categories
+    if (_.isEmpty(categories)) {
+      socket.emit("categories", getCategoriesByGameId(gameId));
+    } else {
+      //Is the creator, store the game gategories
+      addGame({ gameId, categories });
+    }
 
+    socket.join(gameId);
     io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
 
@@ -71,16 +87,24 @@ io.on("connection", (socket) => {
     const userReady = getUser(socketId);
     const gameId = _.get(userReady, "gameId", "");
     io.to(gameId).emit("gameEnded", socketId);
-    console.log("User stopped", socketId);
+    console.log("User finished the game", socketId);
   });
 
   //Sent all the users answers
   socket.on("userWords", (data) => {
     const socketId = socket.id;
-    const userReady = getUser(socketId);
-    const gameId = _.get(userReady, "gameId", "");
+    const user = getUser(socketId);
+    const gameId = _.get(user, "gameId", "");
 
-    console.log(`User ${socketId} words`, data);
+    /*storeGameIdWords({
+      socketId,
+      gameId,
+      letter: data.letter,
+      words: data.words,
+    });*/
+
+    socket.broadcast.to(gameId).emit("otherUserWords", data);
+    //io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
 });
 

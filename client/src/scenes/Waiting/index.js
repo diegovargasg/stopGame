@@ -14,9 +14,11 @@ function Waiting(props) {
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
+  const [categories, setCategories] = useState(
+    _.get(props, "location.state.categories", [])
+  );
   const gameId = _.get(props, "location.state.gameId", "");
   const name = _.get(props, "location.state.name", "");
-  const categories = _.get(props, "location.state.categories", []);
 
   //@TODO move this to config
   const ENDPOINT = "http://localhost:9000/";
@@ -34,7 +36,7 @@ function Waiting(props) {
       return;
     }
 
-    socket.emit("joinGame", { gameId, name });
+    socket.emit("joinGame", { gameId, name, categories });
     socket.on("allUsers", (data) => {
       const currentPlayer = _.find(data, (player) => {
         return player.socketId === socket.id;
@@ -44,6 +46,10 @@ function Waiting(props) {
     });
     socket.on("startGame", (data) => {
       setStartGame(data);
+    });
+    socket.on("categories", (data) => {
+      console.log("categories received", data);
+      setCategories(data);
     });
   }, [socket]);
 
@@ -99,7 +105,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories },
+            state: { categories, name },
           }}
         />
       )}
