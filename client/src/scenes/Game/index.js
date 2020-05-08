@@ -11,7 +11,6 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import { SocketContext } from "../../SocketContext";
 
 function Game(props) {
-  const name = _.get(props, "location.state.name", "");
   const categories = _.get(props, "location.state.categories", []);
   const tmpCat = {};
   categories.map((category) => {
@@ -156,7 +155,6 @@ function Game(props) {
               gameData: {
                 socketId: socket.id,
                 words: words,
-                name: name,
               },
               letter,
               categories,

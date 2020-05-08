@@ -72,6 +72,7 @@ function Waiting(props) {
               variant={player.ready ? "success" : "light"}
             >
               {player.name}
+              {player.name}
             </ListGroup.Item>
           );
         })}
@@ -105,7 +106,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories, name },
+            state: { categories },
           }}
         />
       )}

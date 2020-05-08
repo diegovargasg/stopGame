@@ -8,8 +8,6 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 
 function Moderation(props) {
@@ -81,16 +79,6 @@ function Moderation(props) {
     });*/
   }, []);
 
-  /*useEffect(() => {
-    if (progressBar > 0 && moderationInProgress) {
-      setTimeout(() => {
-        setProgressBar(progressBar - 1);
-      }, 1000);
-    } else if (progressBar <= 0 && moderationInProgress) {
-      setActiveCat(activeCat + 1);
-    }
-  }, [progressBar, moderationInProgress]);*/
-
   useEffect(() => {
     //console.log(gameData);
   }, [gameData]);
@@ -105,11 +93,12 @@ function Moderation(props) {
   };
 
   const updateCat = () => {
-    console.log("updateCat");
-    if (activeCat < categories.length) {
+    console.log("updateCat", activeCat, categories.length);
+    if (activeCat < categories.length - 1) {
       setActiveCat(activeCat + 1);
     } else {
       //Moderation finished
+      setRedirect(true);
     }
   };
 
@@ -149,7 +138,9 @@ function Moderation(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: {},
+            state: {
+              categories,
+            },
           }}
         />
       )}
