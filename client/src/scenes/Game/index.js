@@ -7,6 +7,7 @@ import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
 import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
+import ProgressBar from "react-bootstrap/ProgressBar";
 import { SocketContext } from "../../SocketContext";
 
 function Game(props) {
@@ -16,15 +17,17 @@ function Game(props) {
   categories.map((category) => {
     tmpCat[category] = "";
   });
+  const letterBadge = useRef(null);
+
   const [letter, setLetter] = useState("");
+  const [letterCounter, setLetterCounter] = useState(1500);
   const [gameStarted, setGameStarted] = useState(false);
-  const [counterLetter, setCounterLetter] = useState(0);
   const [showBegin, setShowBegin] = useState(false);
   const [words, setWords] = useState(tmpCat);
   const [stopBtnDisabled, setStopBtnDisabled] = useState(true);
   const [socket, setSocket] = useContext(SocketContext);
-  const [redirect, setRedirect] = useState(false);
-  const letterBadge = useRef(null);
+  const [gameEnded, setGameEnded] = useState(false);
+  const [progressBar, setProgressBar] = useState(30);
 
   const onAdd = (category, word) => {
     setWords((words) => ({ ...words, [category]: word }));
@@ -43,37 +46,31 @@ function Game(props) {
     }
 
     socket.on("gameEnded", (data) => {
-      setRedirect(data);
+      setGameEnded(data);
     });
   }, []);
 
   useEffect(() => {
-    /*let timerId = setInterval(() => {
-      console.log(counterLetter);
-      if (counterLetter > 5) {
-        clearInterval(timerId);
-      }
-      setLetter(getRandomLetter());
-      setCounterLetter(counterLetter + 1);
-    }, 250);
-  */
-  }, [counterLetter]);
-
-  /*useEffect(() => {
-    console.log(counterLetter);
-    if (counterLetter >= 5000) {
+    if (letterCounter > 0) {
+      setTimeout(() => {
+        setLetter(getRandomLetter());
+        setLetterCounter(letterCounter - 100);
+      }, 100);
+    } else {
       setGameStarted(true);
       setShowBegin(true);
-      return;
     }
-    setLetter(getRandomLetter());
-  }, [counterLetter]);
+  }, [letterCounter]);
 
   useEffect(() => {
-    let timerId = setTimeout(() => {
-      setCounterLetter(counterLetter + 200);
-    }, 200);
-  }, [letter]);*/
+    if (progressBar > 0 && gameStarted) {
+      setTimeout(() => {
+        setProgressBar(progressBar - 1);
+      }, 1000);
+    } else if (progressBar <= 0 && gameStarted) {
+      setGameEnded(true);
+    }
+  }, [progressBar, gameStarted]);
 
   useEffect(() => {
     //enable STOP button when all words are filled
@@ -81,13 +78,6 @@ function Game(props) {
       setStopBtnDisabled(false);
     }
   }, [words]);
-
-  /*useEffect(() => {
-    //handle sent message to server and moderation
-    if (gameEnded) {
-      socket.emit("userWords", { words, letter });
-    }
-  }, [gameEnded]);*/
 
   const handleClick = () => {
     setStopBtnDisabled(true);
@@ -123,7 +113,15 @@ function Game(props) {
           <tr>
             <th>Category</th>
             <th>Word</th>
-            <th></th>
+            <th>
+              <ProgressBar
+                variant="primary"
+                min="0"
+                max="30"
+                striped
+                now={progressBar}
+              />
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -133,7 +131,7 @@ function Game(props) {
                 key={category}
                 name={category}
                 onAdd={onAdd}
-                gameEnded={redirect}
+                gameEnded={gameEnded}
                 gameStarted={gameStarted}
               />
             );
@@ -149,7 +147,7 @@ function Game(props) {
       >
         STOP
       </Button>
-      {redirect && (
+      {gameEnded && (
         <Redirect
           to={{
             pathname: "/moderation",
@@ -175,6 +173,7 @@ export function Category(props) {
   const input = useRef(null);
 
   useEffect(() => {
+    //@TODO: when is this executing? which state?
     if (!disabled) {
       input.current.focus();
     }

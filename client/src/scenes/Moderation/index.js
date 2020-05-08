@@ -16,8 +16,7 @@ function Moderation(props) {
   const [socket, setSocket] = useContext(SocketContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
-  const [counter, setCounter] = useState(0);
-  const [counterVariant, setCounterVariant] = useState("primary");
+
   const [uniqueWords, setUniqueWords] = useState([]);
   const [gameData, setGameData] = useState([
     //_.get(props, "location.state.gameData", {}),
@@ -82,27 +81,15 @@ function Moderation(props) {
     });*/
   }, []);
 
-  useEffect(() => {
-    setCounter(0);
-  }, [activeCat]);
-
-  useEffect(() => {
-    if (counter >= 10000 && activeCat + 1 < categories.length) {
+  /*useEffect(() => {
+    if (progressBar > 0 && moderationInProgress) {
+      setTimeout(() => {
+        setProgressBar(progressBar - 1);
+      }, 1000);
+    } else if (progressBar <= 0 && moderationInProgress) {
       setActiveCat(activeCat + 1);
-      setCounterVariant("primary");
-      return;
     }
-
-    if (counter > 6000 && counter < 8500) {
-      setCounterVariant("warning");
-    } else if (counter >= 8000) {
-      setCounterVariant("danger");
-    }
-
-    setTimeout(() => {
-      setCounter(counter + 100);
-    }, 100);
-  }, [counter]);
+  }, [progressBar, moderationInProgress]);*/
 
   useEffect(() => {
     //console.log(gameData);
@@ -117,53 +104,41 @@ function Moderation(props) {
     }
   };
 
+  const updateCat = () => {
+    console.log("updateCat");
+    if (activeCat < categories.length) {
+      setActiveCat(activeCat + 1);
+    } else {
+      //Moderation finished
+    }
+  };
+
   return (
     <React.Fragment>
-      <div className="container-fluid">
-        <Row>
-          <Col xs={8}>
-            <h5>
-              Moderation for the letter{" "}
-              <span className="h3">
-                <Badge variant="primary">{letter}</Badge>
-              </span>
-            </h5>
-          </Col>
-          <Col xs>
-            <ProgressBar
-              variant={counterVariant}
-              min="0"
-              max="10000"
-              striped
-              now={counter}
-            />
-          </Col>
-        </Row>
-      </div>
-
-      <Accordion
-        activeKey={categories[activeCat]}
-        defaultActiveKey={categories[activeCat]}
-      >
-        {categories.map((category) => {
+      <h5>
+        Moderation for the letter{" "}
+        <span className="h3">
+          <Badge variant="primary">{letter}</Badge>
+        </span>
+      </h5>
+      <Accordion activeKey={activeCat}>
+        {categories.map((category, index) => {
+          const isActive = activeCat === index;
           return (
-            <Card key={category}>
-              <Card.Header>{category}</Card.Header>
-              <Accordion.Collapse
-                eventKey={category}
-                className="container-fluid"
-              >
-                <Row>
-                  <Col xs>
-                    <Category
-                      key={category}
-                      name={category}
-                      gameData={gameData}
-                      letter={letter}
-                      isUnique={isUnique}
-                    />
-                  </Col>
-                </Row>
+            <Card key={index}>
+              <Card.Header>
+                <h5>{category}</h5>
+              </Card.Header>
+              <Accordion.Collapse eventKey={index} className="container-fluid">
+                <Card.Body>
+                  <Category
+                    category={category}
+                    gameData={gameData}
+                    isUnique={isUnique}
+                    updateCat={updateCat}
+                    isActive={isActive}
+                  />
+                </Card.Body>
               </Accordion.Collapse>
             </Card>
           );
@@ -183,9 +158,20 @@ function Moderation(props) {
 }
 
 export function Category(props) {
-  const name = props.name;
+  const category = props.category;
   const gameData = props.gameData;
   const style = { margin: "1rem 0" };
+  const [progressBar, setProgressBar] = useState(10);
+
+  useEffect(() => {
+    if (progressBar > 0 && props.isActive) {
+      setTimeout(() => {
+        setProgressBar(progressBar - 1);
+      }, 1000);
+    } else if (progressBar <= 0 && props.isActive) {
+      props.updateCat();
+    }
+  }, [progressBar, props.isActive]);
 
   return (
     <Table striped bordered style={style}>
@@ -194,12 +180,22 @@ export function Category(props) {
           <th>Player</th>
           <th>Word</th>
           <th>Points</th>
-          <th></th>
+          <th>
+            {props.isActive && (
+              <ProgressBar
+                variant="primary"
+                min="0"
+                max="10"
+                striped
+                now={progressBar}
+              />
+            )}
+          </th>
         </tr>
       </thead>
       <tbody>
         {gameData.map((value) => {
-          const word = _.get(value, `words.${name}`, "");
+          const word = _.get(value, `words.${category}`, "");
           const isValid = _.startsWith(word, props.letter);
           const isUnique = props.isUnique(word);
 
@@ -219,7 +215,7 @@ export function Category(props) {
               <td>
                 <span style={style}>{word}</span>
               </td>
-              <th>0</th>
+              <td>0</td>
               <td>
                 <Form.Check
                   type="switch"

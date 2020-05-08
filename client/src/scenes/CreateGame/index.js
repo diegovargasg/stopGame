@@ -5,7 +5,6 @@ import Button from "react-bootstrap/Button";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Alert from "react-bootstrap/Alert";
-import Col from "react-bootstrap/Col";
 import { Redirect } from "react-router-dom";
 
 function CreateGame() {
@@ -37,7 +36,7 @@ function CreateGame() {
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
-    if (form.checkValidity() === false || categories.length < 5) {
+    if (form.checkValidity() === false /*|| categories.length < 5*/) {
       event.preventDefault();
       event.stopPropagation();
       setCatAlert({ display: "block" });
@@ -59,6 +58,7 @@ function CreateGame() {
           maxLength="15"
           ref={inputName}
           autoComplete="off"
+          value="Diego"
         />
       </Form.Group>
       <Form.Group className="col">
