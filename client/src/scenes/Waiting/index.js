@@ -17,6 +17,9 @@ function Waiting(props) {
   const [categories, setCategories] = useState(
     _.get(props, "location.state.categories", [])
   );
+  const [letters, setLetters] = useState(
+    _.get(props, "location.state.letters", [])
+  );
   const gameId = _.get(props, "location.state.gameId", "");
   const name = _.get(props, "location.state.name", "");
 
@@ -35,8 +38,12 @@ function Waiting(props) {
     if (socket === null) {
       return;
     }
-
-    socket.emit("joinGame", { gameId, name, categories });
+    socket.emit("joinGame", {
+      gameId,
+      name,
+      categories,
+      letters,
+    });
     socket.on("allUsers", (data) => {
       const currentPlayer = _.find(data, (player) => {
         return player.socketId === socket.id;
@@ -47,9 +54,9 @@ function Waiting(props) {
     socket.on("startGame", (data) => {
       setStartGame(data);
     });
-    socket.on("categories", (data) => {
-      console.log("categories received", data);
-      setCategories(data);
+    socket.on("gameData", (data) => {
+      setCategories(data.categories);
+      setLetters(data.letters);
     });
   }, [socket]);
 
@@ -61,7 +68,18 @@ function Waiting(props) {
     <React.Fragment>
       <h2>Waiting for players...</h2>
       <Alert variant="primary">
-        Game Id: <b>{gameId}</b>
+        <p>
+          <b>Game ID: </b>
+          {gameId}
+        </p>
+        <p>
+          <b>Categories: </b>
+          {categories.join(", ")}
+        </p>
+        <p>
+          <b>Rounds: </b>
+          {letters.length}
+        </p>
       </Alert>
       <ListGroup as="ul">
         {players.map((player, idx) => {
@@ -71,7 +89,6 @@ function Waiting(props) {
               key={idx}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name}
               {player.name}
             </ListGroup.Item>
           );
@@ -106,7 +123,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories },
+            state: { categories, letters, name },
           }}
         />
       )}

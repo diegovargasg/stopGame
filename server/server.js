@@ -13,13 +13,7 @@ const {
   allUsersReady,
 } = require("./utils/users");
 
-const {
-  storeGameIdWords,
-  getGameIdWords,
-  clearGameIdWords,
-  addGame,
-  getCategoriesByGameId,
-} = require("./utils/game");
+const { addGame, getGameDataById } = require("./utils/game");
 
 const app = express();
 const server = http.createServer(app);
@@ -38,17 +32,19 @@ io.on("connection", (socket) => {
     const gameId = _.get(data, "gameId", "");
     const name = _.get(data, "name", "");
     const categories = _.get(data, "categories", []);
+    const letters = _.get(data, "letters", []);
     const ready = false;
     const socketId = socket.id;
     //update list of players of that game id
     addUser({ socketId, gameId, name, ready });
 
-    //Is a joiner and needs the categories
-    if (_.isEmpty(categories)) {
-      socket.emit("categories", getCategoriesByGameId(gameId));
+    if (_.isEmpty(categories) || _.isEmpty(letters)) {
+      //Is a joiner and needs the categories
+      console.log("gameData", gameId, getGameDataById(gameId));
+      socket.emit("gameData", getGameDataById(gameId));
     } else {
-      //Is the creator, store the game gategories
-      addGame({ gameId, categories });
+      //Is the creator, store the game gategories and letters
+      addGame({ gameId, categories, letters });
     }
 
     socket.join(gameId);

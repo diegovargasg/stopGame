@@ -12,6 +12,7 @@ import { SocketContext } from "../../SocketContext";
 
 function Game(props) {
   const categories = _.get(props, "location.state.categories", []);
+  const name = _.get(props, "location.state.name", "");
   const tmpCat = {};
   categories.map((category) => {
     tmpCat[category] = "";
@@ -155,6 +156,7 @@ function Game(props) {
               gameData: {
                 socketId: socket.id,
                 words: words,
+                name: name,
               },
               letter,
               categories,

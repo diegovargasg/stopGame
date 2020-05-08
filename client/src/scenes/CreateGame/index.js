@@ -8,7 +8,8 @@ import Alert from "react-bootstrap/Alert";
 import { Redirect } from "react-router-dom";
 
 function CreateGame() {
-  const [range, setRange] = useState(5);
+  const [rounds, setRounds] = useState(5);
+  const [letters, setLetters] = useState([]);
   const [categories, setCategories] = useState([]);
   const [valid, setValid] = useState(false);
   const [name, setName] = useState();
@@ -34,6 +35,18 @@ function CreateGame() {
     setCategories(val);
   };
 
+  const getRandomLetters = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let lettersSet = new Set();
+    console.log(lettersSet.size, rounds);
+    while (lettersSet.size < rounds) {
+      const char = chars.charAt(Math.floor(Math.random() * chars.length));
+      lettersSet.add(char);
+    }
+    console.log("letterds set ", lettersSet);
+    return Array.from(lettersSet);
+  };
+
   const handleSubmit = (event) => {
     const form = event.currentTarget;
     if (form.checkValidity() === false /*|| categories.length < 5*/) {
@@ -42,6 +55,7 @@ function CreateGame() {
       setCatAlert({ display: "block" });
       return false;
     }
+    setLetters(getRandomLetters());
     setCatAlert({ display: "none" });
     setValid(true);
     setName(_.get(inputName, "current.value", ""));
@@ -90,13 +104,13 @@ function CreateGame() {
         </Alert>
       </Form.Group>
       <Form.Group controlId="rounds">
-        <Form.Label>Rounds: {range}</Form.Label>
+        <Form.Label>Rounds: {rounds}</Form.Label>
         <Form.Control
           min="1"
           max="5"
-          value={range}
+          value={rounds}
           type="range"
-          onChange={(event) => setRange(event.target.value)}
+          onChange={(event) => setRounds(event.target.value)}
         />
       </Form.Group>
       <Button className="btn btn-primary btn-lg btn-block" type="submit">
@@ -107,7 +121,12 @@ function CreateGame() {
           to={{
             pathname: "/waiting",
             push: true,
-            state: { name, gameId, categories: categories.sort() },
+            state: {
+              name,
+              gameId,
+              letters,
+              categories: categories.sort(),
+            },
           }}
         />
       )}

@@ -17,41 +17,7 @@ function Moderation(props) {
 
   const [uniqueWords, setUniqueWords] = useState([]);
   const [gameData, setGameData] = useState([
-    //_.get(props, "location.state.gameData", {}),
-
-    {
-      socketId: "4wT6dgez6LuF7MJdAAAJ",
-      words: {
-        Names: "Ppp",
-        Food: "Ooo",
-        Objects: "Test",
-        Animals: "",
-        Brands: "Tennis",
-      },
-      name: "vargas",
-    },
-    {
-      socketId: "4wT6dgez6LuF7MJdAAAG",
-      words: {
-        Names: "papagayo",
-        Food: "temp",
-        Objects: "otro",
-        Animals: "Unomas",
-        Brands: "Football",
-      },
-      name: "camilo",
-    },
-    {
-      socketId: "4wT6dgez6LuF7MJdAATG",
-      words: {
-        Names: "Fapagayo",
-        Food: "temp",
-        Objects: "otro",
-        Animals: "Unomas",
-        Brands: "Football",
-      },
-      name: "Diego",
-    },
+    _.get(props, "location.state.gameData", {}),
   ]);
 
   const letter = _.get(props, "location.state.letter", "");
@@ -59,14 +25,12 @@ function Moderation(props) {
   const userData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
-    console.log(gameData);
-
-    /*if (socket === null) {
+    if (socket === null) {
       props.history.push("/");
       return;
-    }*/
+    }
 
-    /*socket.emit("userWords", {
+    socket.emit("userWords", {
       socketId: userData.socketId,
       name: userData.name,
       letter,
@@ -76,7 +40,7 @@ function Moderation(props) {
     socket.on("otherUserWords", (otherUserData) => {
       console.log(otherUserData);
       setGameData((gameData) => [...gameData, otherUserData]);
-    });*/
+    });
   }, []);
 
   useEffect(() => {
@@ -126,6 +90,7 @@ function Moderation(props) {
                     isUnique={isUnique}
                     updateCat={updateCat}
                     isActive={isActive}
+                    letter={letter}
                   />
                 </Card.Body>
               </Accordion.Collapse>
@@ -189,22 +154,24 @@ export function Category(props) {
           const word = _.get(value, `words.${category}`, "");
           const isValid = _.startsWith(word, props.letter);
           const isUnique = props.isUnique(word);
-
-          let style = {};
-
-          if (!isValid) {
-            style = { color: "red" };
-          } else if (!isUnique) {
-            style = { color: "yellow" };
-          } else {
-            style = { color: "green" };
-          }
-
+          console.log(value);
           return (
             <tr key={value.socketId}>
               <td>{value.name}</td>
               <td>
-                <span style={style}>{word}</span>
+                <span>
+                  {word}{" "}
+                  {word !== "" && !isValid && (
+                    <Badge pill variant="danger">
+                      invalid
+                    </Badge>
+                  )}
+                  {word !== "" && !isUnique && isValid && (
+                    <Badge pill variant="warning">
+                      duplicated
+                    </Badge>
+                  )}
+                </span>
               </td>
               <td>0</td>
               <td>

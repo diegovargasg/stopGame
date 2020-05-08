@@ -54,7 +54,7 @@ function JoinGame() {
           to={{
             pathname: "/waiting",
             push: true,
-            state: { name, gameId },
+            state: { name, gameId, letters: [], categories: [] },
           }}
         />
       )}
