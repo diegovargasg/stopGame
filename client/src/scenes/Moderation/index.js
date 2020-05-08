@@ -154,7 +154,6 @@ export function Category(props) {
           const word = _.get(value, `words.${category}`, "");
           const isValid = _.startsWith(word, props.letter);
           const isUnique = props.isUnique(word);
-          console.log(value);
           return (
             <tr key={value.socketId}>
               <td>{value.name}</td>

@@ -14,6 +14,7 @@ function Waiting(props) {
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
+  const [btnReadyDisabled, setBtnReadyDisabled] = useState(true);
   const [categories, setCategories] = useState(
     _.get(props, "location.state.categories", [])
   );
@@ -44,6 +45,7 @@ function Waiting(props) {
       categories,
       letters,
     });
+
     socket.on("allUsers", (data) => {
       const currentPlayer = _.find(data, (player) => {
         return player.socketId === socket.id;
@@ -51,22 +53,32 @@ function Waiting(props) {
       setPlayers(data);
       setPlayer(currentPlayer);
     });
+
     socket.on("startGame", (data) => {
       setStartGame(data);
     });
+
     socket.on("gameData", (data) => {
       setCategories(data.categories);
       setLetters(data.letters);
     });
   }, [socket]);
 
+  useEffect(() => {
+    if (players.length <= 1) {
+      setBtnReadyDisabled();
+    }
+  }, [players]);
+
   const handleReady = () => {
     socket.emit("userReady", !_.get(player, "ready", false));
   };
 
+  const styleUl = { margin: "1rem 0" };
+
   return (
     <React.Fragment>
-      <h2>Waiting for players...</h2>
+      <h5>Waiting for other players...</h5>
       <Alert variant="primary">
         <p>
           <b>Game ID: </b>
@@ -81,7 +93,7 @@ function Waiting(props) {
           {letters.length}
         </p>
       </Alert>
-      <ListGroup as="ul">
+      <ListGroup style={styleUl} as="ul">
         {players.map((player, idx) => {
           return (
             <ListGroup.Item
@@ -89,7 +101,7 @@ function Waiting(props) {
               key={idx}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name}
+              {player.name} {player.socketId}
             </ListGroup.Item>
           );
         })}
@@ -101,6 +113,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={() => {
+              socket.close();
               props.history.push("/");
             }}
           >
@@ -113,6 +126,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
+            disabled={btnReadyDisabled}
           >
             {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
           </Button>

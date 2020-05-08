@@ -12,7 +12,6 @@ function clearGameIdWords(gameId, letter) {}
 
 function addGame({ gameId, categories, letters }) {
   games[gameId] = { categories, letters };
-  console.log(games);
 }
 
 function getCategoriesByGameId(gameId) {
@@ -32,7 +31,6 @@ function getGameDataById(gameId) {
 
 module.exports = {
   addGame,
-  getCategoriesByGameId,
   storeGameIdWords,
   getGameIdWords,
   clearGameIdWords,

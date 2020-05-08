@@ -38,12 +38,11 @@ function CreateGame() {
   const getRandomLetters = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let lettersSet = new Set();
-    console.log(lettersSet.size, rounds);
+
     while (lettersSet.size < rounds) {
       const char = chars.charAt(Math.floor(Math.random() * chars.length));
       lettersSet.add(char);
     }
-    console.log("letterds set ", lettersSet);
     return Array.from(lettersSet);
   };
 

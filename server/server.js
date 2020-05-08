@@ -11,6 +11,7 @@ const {
   getAllUsersByGameId,
   updateUserReady,
   allUsersReady,
+  unReadyAllUsersByGameId,
 } = require("./utils/users");
 
 const { addGame, getGameDataById } = require("./utils/game");
@@ -57,6 +58,7 @@ io.on("connection", (socket) => {
     const gameId = _.get(user, "gameId", "");
     console.log(`user disconneted ${socketId}`);
     removeUser(socketId);
+    unReadyAllUsersByGameId(gameId);
 
     io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });

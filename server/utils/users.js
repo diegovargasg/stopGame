@@ -43,6 +43,14 @@ function allUsersReady(gameId) {
   );
 }
 
+function unReadyAllUsersByGameId(gameId) {
+  _.forEach(allUsers, (user, key) => {
+    if (user.gameId === gameId) {
+      _.set(allUsers, `${key}.ready`, false);
+    }
+  });
+}
+
 module.exports = {
   getAllUsersByGameId,
   getUser,
@@ -50,4 +58,5 @@ module.exports = {
   removeUser,
   updateUserReady,
   allUsersReady,
+  unReadyAllUsersByGameId,
 };
