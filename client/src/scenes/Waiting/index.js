@@ -14,6 +14,7 @@ function Waiting(props) {
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
+  const [socketId, setSocketId] = useState();
   const [btnReadyDisabled, setBtnReadyDisabled] = useState(true);
   const [categories, setCategories] = useState(
     _.get(props, "location.state.categories", [])
@@ -62,11 +63,13 @@ function Waiting(props) {
       setCategories(data.categories);
       setLetters(data.letters);
     });
+
+    setSocketId(socket.id);
   }, [socket]);
 
   useEffect(() => {
     if (players.length <= 1) {
-      setBtnReadyDisabled();
+      setBtnReadyDisabled(true);
     }
   }, [players]);
 
@@ -137,7 +140,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories, letters, name },
+            state: { categories, letters, name, socketId },
           }}
         />
       )}

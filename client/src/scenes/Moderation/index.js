@@ -1,10 +1,11 @@
 import _ from "lodash";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Redirect } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import Table from "react-bootstrap/Table";
 import Accordion from "react-bootstrap/Accordion";
-import Button from "react-bootstrap/Button";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
@@ -14,15 +15,17 @@ function Moderation(props) {
   const [socket, setSocket] = useContext(SocketContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
-
-  const [uniqueWords, setUniqueWords] = useState([]);
+  const [wordVotes, setWordVotes] = useState({});
+  const [uniqueWords, setUniqueWords] = useState({});
   const [gameData, setGameData] = useState([
     _.get(props, "location.state.gameData", {}),
   ]);
 
+  const letters = _.get(props, "location.state.letters", []);
   const letter = _.get(props, "location.state.letter", "");
   const categories = _.get(props, "location.state.categories", []);
   const userData = _.get(props, "location.state.gameData", {});
+  const socketId = _.get(props, "location.state.gameData.socketId", "");
 
   useEffect(() => {
     if (socket === null) {
@@ -41,11 +44,23 @@ function Moderation(props) {
       console.log(otherUserData);
       setGameData((gameData) => [...gameData, otherUserData]);
     });
+
+    socket.on("otherUserVoted", (data) => {
+      setWordVotes((wordVotes) => {
+        const newVote = _.cloneDeep(wordVotes);
+        _.set(newVote, `${data.key}.${data.voter}`, data.vote);
+        return newVote;
+      });
+    });
   }, []);
 
   useEffect(() => {
-    //console.log(gameData);
+    console.log("Game data changed", gameData);
   }, [gameData]);
+
+  useEffect(() => {
+    console.log("usersVotes", wordVotes);
+  }, [wordVotes]);
 
   const isUnique = (word) => {
     if (uniqueWords.includes(word)) {
@@ -62,8 +77,26 @@ function Moderation(props) {
       setActiveCat(activeCat + 1);
     } else {
       //Moderation finished
-      setRedirect(true);
+      //setRedirect(true);
     }
+  };
+
+  const handleApprove = (socketId, category, activeSocket, vote) => {
+    if (socket === null) {
+      return;
+    }
+
+    setWordVotes((wordVotes) => {
+      const newVote = _.cloneDeep(wordVotes);
+      _.set(newVote, `${socketId}-${category}.${activeSocket}`, vote);
+      return newVote;
+    });
+
+    socket.emit("userVotes", {
+      key: `${socketId}-${category}`,
+      voter: activeSocket,
+      vote: vote,
+    });
   };
 
   return (
@@ -89,8 +122,11 @@ function Moderation(props) {
                     gameData={gameData}
                     isUnique={isUnique}
                     updateCat={updateCat}
+                    handleApprove={handleApprove}
                     isActive={isActive}
                     letter={letter}
+                    wordVotes={wordVotes}
+                    socketId={socketId}
                   />
                 </Card.Body>
               </Accordion.Collapse>
@@ -105,6 +141,7 @@ function Moderation(props) {
             push: true,
             state: {
               categories,
+              letters,
             },
           }}
         />
@@ -114,23 +151,21 @@ function Moderation(props) {
 }
 
 export function Category(props) {
-  const category = props.category;
-  const gameData = props.gameData;
-  const style = { margin: "1rem 0" };
+  const tableStyle = { margin: "1rem 0" };
   const [progressBar, setProgressBar] = useState(10);
 
   useEffect(() => {
-    if (progressBar > 0 && props.isActive) {
+    /*if (progressBar > 0 && props.isActive) {
       setTimeout(() => {
         setProgressBar(progressBar - 1);
       }, 1000);
     } else if (progressBar <= 0 && props.isActive) {
       props.updateCat();
-    }
+    }*/
   }, [progressBar, props.isActive]);
 
   return (
-    <Table striped bordered style={style}>
+    <Table striped bordered style={tableStyle}>
       <thead>
         <tr>
           <th>Player</th>
@@ -150,42 +185,108 @@ export function Category(props) {
         </tr>
       </thead>
       <tbody>
-        {gameData.map((value) => {
-          const word = _.get(value, `words.${category}`, "");
-          const isValid = _.startsWith(word, props.letter);
-          const isUnique = props.isUnique(word);
+        {props.gameData.map((value) => {
+          const word = _.get(value, `words.${props.category}`, "");
           return (
-            <tr key={value.socketId}>
-              <td>{value.name}</td>
-              <td>
-                <span>
-                  {word}{" "}
-                  {word !== "" && !isValid && (
-                    <Badge pill variant="danger">
-                      invalid
-                    </Badge>
-                  )}
-                  {word !== "" && !isUnique && isValid && (
-                    <Badge pill variant="warning">
-                      duplicated
-                    </Badge>
-                  )}
-                </span>
-              </td>
-              <td>0</td>
-              <td>
-                <Form.Check
-                  type="switch"
-                  disabled={!isValid}
-                  id="custom-switch"
-                  label="Approves"
-                />
-              </td>
-            </tr>
+            <Player
+              key={value.socketId}
+              socketId={value.socketId}
+              name={value.name}
+              word={word}
+              wordVotes={props.wordVotes}
+              category={props.category}
+              letter={props.letter}
+              handleApprove={props.handleApprove}
+              activeSocket={props.activeSocket}
+            />
           );
         })}
       </tbody>
     </Table>
+  );
+}
+
+export function Player(props) {
+  useEffect(() => {
+    const votesByPlayerCat = _.get(
+      props.wordVotes,
+      `${props.socketId}-${props.category}`,
+      {}
+    );
+
+    let yes = 0;
+    let no = 0;
+
+    _.forEach(votesByPlayerCat, (vote) => {
+      if (vote === 1) {
+        yes++;
+      } else if (vote === -1) {
+        no++;
+      }
+    });
+    setYes(yes);
+    setNo(no);
+  }, [props.wordVotes]);
+
+  const isValid = _.startsWith(props.word, props.letter);
+  //const isUnique = props.isUnique(props.word);
+
+  const [approved, setApproved] = useState();
+  const [yes, setYes] = useState(0);
+  const [no, setNo] = useState(0);
+  const handleApprove = (vote) => {
+    setApproved(vote);
+    props.handleApprove(
+      props.socketId,
+      props.category,
+      props.activeSocket,
+      vote
+    );
+  };
+
+  return (
+    <tr>
+      <td>{props.name}</td>
+      <td>
+        <span>
+          {props.word}{" "}
+          {yes > 0 && (
+            <Badge pill variant="success">
+              {yes}
+            </Badge>
+          )}
+          {no > 0 && (
+            <Badge pill variant="danger">
+              {no}
+            </Badge>
+          )}
+        </span>
+      </td>
+      <td>0</td>
+      <td>
+        <ToggleButtonGroup
+          type="radio"
+          value={approved}
+          name={`${props.socketId}-${props.category}`}
+          onChange={handleApprove}
+        >
+          <ToggleButton
+            variant={approved === 1 ? "primary" : "secondary"}
+            value={1}
+            disabled={!isValid}
+          >
+            Yes
+          </ToggleButton>
+          <ToggleButton
+            variant={approved === -1 ? "primary" : "secondary"}
+            value={-1}
+            disabled={!isValid}
+          >
+            No
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </td>
+    </tr>
   );
 }
 

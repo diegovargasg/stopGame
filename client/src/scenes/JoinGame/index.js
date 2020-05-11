@@ -32,6 +32,7 @@ function JoinGame() {
             required
             minLength="2"
             maxLength="15"
+            value="Camilo"
             ref={inputName}
           />
         </Form.Group>

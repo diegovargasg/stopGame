@@ -13,12 +13,17 @@ import { SocketContext } from "../../SocketContext";
 function Game(props) {
   const categories = _.get(props, "location.state.categories", []);
   const name = _.get(props, "location.state.name", "");
+  const socketId = _.get(props, "location.state.name", "");
   const tmpCat = {};
+  const tmpVotes = {};
   categories.map((category) => {
     tmpCat[category] = "";
   });
   const letterBadge = useRef(null);
 
+  const [letters, setLetters] = useState(
+    _.get(props, "location.state.letters", [])
+  );
   const [letter, setLetter] = useState("");
   const [letterCounter, setLetterCounter] = useState(1500);
   const [gameStarted, setGameStarted] = useState(false);
@@ -57,6 +62,11 @@ function Game(props) {
         setLetterCounter(letterCounter - 100);
       }, 100);
     } else {
+      setLetter(_.first(letters));
+      console.log(letters);
+      const lettersTmp = [...letters];
+      lettersTmp.shift();
+      setLetters(lettersTmp);
       setGameStarted(true);
       setShowBegin(true);
     }
@@ -154,12 +164,13 @@ function Game(props) {
             push: true,
             state: {
               gameData: {
-                socketId: socket.id,
+                socketId: socketId,
                 words: words,
                 name: name,
               },
               letter,
               categories,
+              letters,
             },
           }}
         />

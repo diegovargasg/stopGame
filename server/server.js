@@ -93,16 +93,16 @@ io.on("connection", (socket) => {
     const socketId = socket.id;
     const user = getUser(socketId);
     const gameId = _.get(user, "gameId", "");
-
-    /*storeGameIdWords({
-      socketId,
-      gameId,
-      letter: data.letter,
-      words: data.words,
-    });*/
-
+    console.log(data);
     socket.broadcast.to(gameId).emit("otherUserWords", data);
-    //io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+  });
+
+  socket.on("userVotes", (data) => {
+    console.log("votes", data);
+    const socketId = socket.id;
+    const user = getUser(socketId);
+    const gameId = _.get(user, "gameId", "");
+    socket.broadcast.to(gameId).emit("otherUserVoted", data);
   });
 });
 

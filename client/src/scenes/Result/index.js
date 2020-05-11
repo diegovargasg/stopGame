@@ -5,7 +5,7 @@ function Result() {
 
   useEffect(() => {}, []);
 
-  return <h1>Result</h1>;
+  return <React.Fragment>Result</React.Fragment>;
 }
 
 export default Result;
