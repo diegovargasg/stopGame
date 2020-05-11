@@ -14,8 +14,6 @@ function Waiting(props) {
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
-  const [socketId, setSocketId] = useState();
-  const [btnReadyDisabled, setBtnReadyDisabled] = useState(true);
   const [categories, setCategories] = useState(
     _.get(props, "location.state.categories", [])
   );
@@ -63,15 +61,7 @@ function Waiting(props) {
       setCategories(data.categories);
       setLetters(data.letters);
     });
-
-    setSocketId(socket.id);
   }, [socket]);
-
-  useEffect(() => {
-    if (players.length <= 1) {
-      setBtnReadyDisabled(true);
-    }
-  }, [players]);
 
   const handleReady = () => {
     socket.emit("userReady", !_.get(player, "ready", false));
@@ -104,7 +94,7 @@ function Waiting(props) {
               key={idx}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name} {player.socketId}
+              {player.name}
             </ListGroup.Item>
           );
         })}
@@ -129,7 +119,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
-            disabled={btnReadyDisabled}
+            disabled={players.length <= 1 ? true : false}
           >
             {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
           </Button>
@@ -140,7 +130,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories, letters, name, socketId },
+            state: { categories, letters, name },
           }}
         />
       )}

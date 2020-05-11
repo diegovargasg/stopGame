@@ -25,7 +25,6 @@ function Moderation(props) {
   const letter = _.get(props, "location.state.letter", "");
   const categories = _.get(props, "location.state.categories", []);
   const userData = _.get(props, "location.state.gameData", {});
-  const socketId = _.get(props, "location.state.gameData.socketId", "");
 
   useEffect(() => {
     if (socket === null) {
@@ -126,7 +125,7 @@ function Moderation(props) {
                     isActive={isActive}
                     letter={letter}
                     wordVotes={wordVotes}
-                    socketId={socketId}
+                    localSocketId={_.get(socket, "id", "")}
                   />
                 </Card.Body>
               </Accordion.Collapse>
@@ -197,7 +196,7 @@ export function Category(props) {
               category={props.category}
               letter={props.letter}
               handleApprove={props.handleApprove}
-              activeSocket={props.activeSocket}
+              localSocketId={props.localSocketId}
             />
           );
         })}
@@ -239,7 +238,7 @@ export function Player(props) {
     props.handleApprove(
       props.socketId,
       props.category,
-      props.activeSocket,
+      props.localSocketId,
       vote
     );
   };
@@ -264,27 +263,29 @@ export function Player(props) {
       </td>
       <td>0</td>
       <td>
-        <ToggleButtonGroup
-          type="radio"
-          value={approved}
-          name={`${props.socketId}-${props.category}`}
-          onChange={handleApprove}
-        >
-          <ToggleButton
-            variant={approved === 1 ? "primary" : "secondary"}
-            value={1}
-            disabled={!isValid}
+        {props.socketId !== props.localSocketId && (
+          <ToggleButtonGroup
+            type="radio"
+            value={approved}
+            name={`${props.socketId}-${props.category}`}
+            onChange={handleApprove}
           >
-            Yes
-          </ToggleButton>
-          <ToggleButton
-            variant={approved === -1 ? "primary" : "secondary"}
-            value={-1}
-            disabled={!isValid}
-          >
-            No
-          </ToggleButton>
-        </ToggleButtonGroup>
+            <ToggleButton
+              variant={approved === 1 ? "primary" : "secondary"}
+              value={1}
+              disabled={!isValid}
+            >
+              Yes
+            </ToggleButton>
+            <ToggleButton
+              variant={approved === -1 ? "primary" : "secondary"}
+              value={-1}
+              disabled={!isValid}
+            >
+              No
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
       </td>
     </tr>
   );

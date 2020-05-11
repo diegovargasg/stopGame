@@ -13,12 +13,6 @@ import { SocketContext } from "../../SocketContext";
 function Game(props) {
   const categories = _.get(props, "location.state.categories", []);
   const name = _.get(props, "location.state.name", "");
-  const socketId = _.get(props, "location.state.name", "");
-  const tmpCat = {};
-  const tmpVotes = {};
-  categories.map((category) => {
-    tmpCat[category] = "";
-  });
   const letterBadge = useRef(null);
 
   const [letters, setLetters] = useState(
@@ -28,7 +22,7 @@ function Game(props) {
   const [letterCounter, setLetterCounter] = useState(1500);
   const [gameStarted, setGameStarted] = useState(false);
   const [showBegin, setShowBegin] = useState(false);
-  const [words, setWords] = useState(tmpCat);
+  const [words, setWords] = useState({});
   const [stopBtnDisabled, setStopBtnDisabled] = useState(true);
   const [socket, setSocket] = useContext(SocketContext);
   const [gameEnded, setGameEnded] = useState(false);
@@ -53,6 +47,13 @@ function Game(props) {
     socket.on("gameEnded", (data) => {
       setGameEnded(data);
     });
+
+    const tmpCat = {};
+    categories.map((category) => {
+      tmpCat[category] = "";
+    });
+
+    setWords(tmpCat);
   }, []);
 
   useEffect(() => {
@@ -84,7 +85,9 @@ function Game(props) {
 
   useEffect(() => {
     //enable STOP button when all words are filled
-    if (!Object.values(words).includes("")) {
+    if (Object.values(words).includes("")) {
+      setStopBtnDisabled(true);
+    } else {
       setStopBtnDisabled(false);
     }
   }, [words]);
@@ -164,7 +167,7 @@ function Game(props) {
             push: true,
             state: {
               gameData: {
-                socketId: socketId,
+                socketId: socket.id,
                 words: words,
                 name: name,
               },
