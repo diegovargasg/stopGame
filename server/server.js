@@ -30,22 +30,24 @@ io.on("connection", (socket) => {
   console.log(`user connected ${socket.id}`);
   //User has joined a game
   socket.on("joinGame", (data) => {
-    const gameId = _.get(data, "gameId", "");
+    const gameId = _.get(data, "id", "");
     const name = _.get(data, "name", "");
     const categories = _.get(data, "categories", []);
     const letters = _.get(data, "letters", []);
+    const rounds = _.get(data, "rounds", 0);
     const ready = false;
     const socketId = socket.id;
     //update list of players of that game id
     addUser({ socketId, gameId, name, ready });
 
-    if (_.isEmpty(categories) || _.isEmpty(letters)) {
+    if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
       //Is a joiner and needs the categories
-      console.log("gameData", gameId, getGameDataById(gameId));
+      console.log("gameData sent to joiner", gameId, getGameDataById(gameId));
       socket.emit("gameData", getGameDataById(gameId));
     } else {
       //Is the creator, store the game gategories and letters
-      addGame({ gameId, categories, letters });
+      console.log("game created", { gameId, categories, letters, rounds });
+      addGame({ gameId, categories, letters, rounds });
     }
 
     socket.join(gameId);

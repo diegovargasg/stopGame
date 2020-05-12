@@ -10,8 +10,10 @@ import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Form from "react-bootstrap/Form";
+import { GameContext } from "../../GameContext";
 
 function Moderation(props) {
+  const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
@@ -21,9 +23,7 @@ function Moderation(props) {
     _.get(props, "location.state.gameData", {}),
   ]);
 
-  const letters = _.get(props, "location.state.letters", []);
   const letter = _.get(props, "location.state.letter", "");
-  const categories = _.get(props, "location.state.categories", []);
   const userData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
@@ -71,8 +71,8 @@ function Moderation(props) {
   };
 
   const updateCat = () => {
-    console.log("updateCat", activeCat, categories.length);
-    if (activeCat < categories.length - 1) {
+    //console.log("updateCat", activeCat, game.categories.length);
+    if (activeCat < game.categories.length - 1) {
       setActiveCat(activeCat + 1);
     } else {
       //Moderation finished
@@ -107,7 +107,7 @@ function Moderation(props) {
         </span>
       </h5>
       <Accordion activeKey={activeCat}>
-        {categories.map((category, index) => {
+        {game.categories.map((category, index) => {
           const isActive = activeCat === index;
           return (
             <Card key={index}>
@@ -138,10 +138,7 @@ function Moderation(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: {
-              categories,
-              letters,
-            },
+            state: {},
           }}
         />
       )}

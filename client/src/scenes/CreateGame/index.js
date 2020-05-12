@@ -1,21 +1,20 @@
 import _ from "lodash";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Alert from "react-bootstrap/Alert";
 import { Redirect } from "react-router-dom";
+import { GameContext } from "../../GameContext";
 
 function CreateGame() {
+  const [game, setGame] = useContext(GameContext);
   const [rounds, setRounds] = useState(5);
-  const [letters, setLetters] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [valid, setValid] = useState(false);
-  const [name, setName] = useState();
-  const [catAlert, setCatAlert] = useState({ display: "none" });
-  const gameId = Math.random().toString(36).substr(2, 6);
-  const inputName = useRef(null);
+  const [redirect, setRedirect] = useState(false);
+  const [name, setName] = useState("diego");
+  const [catAlert, setCatAlert] = useState(false);
   const categoriesNames = [
     "Names",
     "Animals",
@@ -30,10 +29,6 @@ function CreateGame() {
     "Sports",
     "Movies",
   ];
-
-  const handleCategories = (val) => {
-    setCategories(val);
-  };
 
   const getRandomLetters = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -51,13 +46,23 @@ function CreateGame() {
     if (form.checkValidity() === false /*|| categories.length < 5*/) {
       event.preventDefault();
       event.stopPropagation();
-      setCatAlert({ display: "block" });
+      setCatAlert(true);
       return false;
     }
-    setLetters(getRandomLetters());
-    setCatAlert({ display: "none" });
-    setValid(true);
-    setName(_.get(inputName, "current.value", ""));
+    setCatAlert(false);
+
+    const gameId = Math.random().toString(36).substr(2, 6);
+    const letters = getRandomLetters();
+    setGame((game) => {
+      return {
+        ...game,
+        id: gameId,
+        categories: categories.sort(),
+        letters: letters,
+        rounds: rounds,
+      };
+    });
+    setRedirect(true);
   };
 
   return (
@@ -69,7 +74,7 @@ function CreateGame() {
           required
           minLength="2"
           maxLength="15"
-          ref={inputName}
+          onChange={(event) => setName(event.target.value)}
           autoComplete="off"
           value="Diego"
         />
@@ -80,7 +85,9 @@ function CreateGame() {
           className="row"
           type="checkbox"
           value={categories}
-          onChange={handleCategories}
+          onChange={(val) => {
+            setCategories(val);
+          }}
         >
           {categoriesNames.map((category) => {
             return (
@@ -98,9 +105,11 @@ function CreateGame() {
             );
           })}
         </ToggleButtonGroup>
-        <Alert className="row" variant="danger" style={catAlert}>
-          Please select 5 categories
-        </Alert>
+        {catAlert && (
+          <Alert className="row" variant="danger">
+            Please select 5 categories
+          </Alert>
+        )}
       </Form.Group>
       <Form.Group controlId="rounds">
         <Form.Label>Rounds: {rounds}</Form.Label>
@@ -115,16 +124,13 @@ function CreateGame() {
       <Button className="btn btn-primary btn-lg btn-block" type="submit">
         Create
       </Button>
-      {valid && (
+      {redirect && (
         <Redirect
           to={{
             pathname: "/waiting",
             push: true,
             state: {
               name,
-              gameId,
-              letters,
-              categories: categories.sort(),
             },
           }}
         />

@@ -7,6 +7,7 @@ import { Redirect } from "react-router-dom";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { SocketContext } from "../../SocketContext";
+import { GameContext } from "../../GameContext";
 import socketIOClient from "socket.io-client";
 
 function Waiting(props) {
@@ -14,13 +15,7 @@ function Waiting(props) {
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
   const [socket, setSocket] = useContext(SocketContext);
-  const [categories, setCategories] = useState(
-    _.get(props, "location.state.categories", [])
-  );
-  const [letters, setLetters] = useState(
-    _.get(props, "location.state.letters", [])
-  );
-  const gameId = _.get(props, "location.state.gameId", "");
+  const [game, setGame] = useContext(GameContext);
   const name = _.get(props, "location.state.name", "");
 
   //@TODO move this to config
@@ -38,11 +33,13 @@ function Waiting(props) {
     if (socket === null) {
       return;
     }
+
     socket.emit("joinGame", {
-      gameId,
+      id: game.id,
       name,
-      categories,
-      letters,
+      categories: game.categories,
+      letters: game.letters,
+      rounds: game.rounds,
     });
 
     socket.on("allUsers", (data) => {
@@ -58,8 +55,12 @@ function Waiting(props) {
     });
 
     socket.on("gameData", (data) => {
-      setCategories(data.categories);
-      setLetters(data.letters);
+      setGame((game) => ({
+        ...game,
+        categories: data.categories,
+        letters: data.letters,
+        rounds: data.rounds,
+      }));
     });
   }, [socket]);
 
@@ -75,15 +76,15 @@ function Waiting(props) {
       <Alert variant="primary">
         <p>
           <b>Game ID: </b>
-          {gameId}
+          {game.id}
         </p>
         <p>
           <b>Categories: </b>
-          {categories.join(", ")}
+          {game.categories.join(", ")}
         </p>
         <p>
           <b>Rounds: </b>
-          {letters.length}
+          {game.rounds}
         </p>
       </Alert>
       <ListGroup style={styleUl} as="ul">
@@ -130,7 +131,7 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { categories, letters, name },
+            state: { name },
           }}
         />
       )}

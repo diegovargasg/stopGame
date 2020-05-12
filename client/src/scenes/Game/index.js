@@ -9,21 +9,19 @@ import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { SocketContext } from "../../SocketContext";
+import { GameContext } from "../../GameContext";
 
 function Game(props) {
-  const categories = _.get(props, "location.state.categories", []);
   const name = _.get(props, "location.state.name", "");
   const letterBadge = useRef(null);
 
-  const [letters, setLetters] = useState(
-    _.get(props, "location.state.letters", [])
-  );
   const [letter, setLetter] = useState("");
   const [letterCounter, setLetterCounter] = useState(1500);
   const [gameStarted, setGameStarted] = useState(false);
   const [showBegin, setShowBegin] = useState(false);
   const [words, setWords] = useState({});
   const [stopBtnDisabled, setStopBtnDisabled] = useState(true);
+  const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [gameEnded, setGameEnded] = useState(false);
   const [progressBar, setProgressBar] = useState(30);
@@ -49,7 +47,7 @@ function Game(props) {
     });
 
     const tmpCat = {};
-    categories.map((category) => {
+    game.categories.map((category) => {
       tmpCat[category] = "";
     });
 
@@ -63,11 +61,7 @@ function Game(props) {
         setLetterCounter(letterCounter - 100);
       }, 100);
     } else {
-      setLetter(_.first(letters));
-      console.log(letters);
-      const lettersTmp = [...letters];
-      lettersTmp.shift();
-      setLetters(lettersTmp);
+      setLetter(_.first(game.letters));
       setGameStarted(true);
       setShowBegin(true);
     }
@@ -138,7 +132,7 @@ function Game(props) {
           </tr>
         </thead>
         <tbody>
-          {categories.map((category) => {
+          {game.categories.map((category) => {
             return (
               <Category
                 key={category}
@@ -172,8 +166,6 @@ function Game(props) {
                 name: name,
               },
               letter,
-              categories,
-              letters,
             },
           }}
         />

@@ -1,15 +1,15 @@
 import _ from "lodash";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useContext } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Redirect } from "react-router-dom";
+import { GameContext } from "../../GameContext";
 
 function JoinGame() {
+  const [game, setGame] = useContext(GameContext);
   const [valid, setValid] = useState(false);
   const [gameId, setGameId] = useState("");
-  const [name, setName] = useState();
-  const inputName = useRef(null);
-  const inputGameId = useRef(null);
+  const [name, setName] = useState("camilo");
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
@@ -17,8 +17,10 @@ function JoinGame() {
       event.preventDefault();
       event.stopPropagation();
     }
-    setName(_.get(inputName, "current.value"), "");
-    setGameId(_.get(inputGameId, "current.value"), "");
+    setGame((game) => ({
+      ...game,
+      id: gameId,
+    }));
     setValid(true);
   };
 
@@ -33,7 +35,7 @@ function JoinGame() {
             minLength="2"
             maxLength="15"
             value="Camilo"
-            ref={inputName}
+            onChange={(event) => setName(event.target.value)}
           />
         </Form.Group>
         <Form.Group controlId="gameId">
@@ -43,7 +45,9 @@ function JoinGame() {
             required
             minLength="6"
             maxLength="6"
-            ref={inputGameId}
+            onChange={(event) => {
+              setGameId(event.target.value);
+            }}
           />
         </Form.Group>
         <Button className="btn btn-primary btn-lg btn-block" type="submit">
@@ -55,7 +59,7 @@ function JoinGame() {
           to={{
             pathname: "/waiting",
             push: true,
-            state: { name, gameId, letters: [], categories: [] },
+            state: { name },
           }}
         />
       )}
