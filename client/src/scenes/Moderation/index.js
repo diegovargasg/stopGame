@@ -26,7 +26,7 @@ function Moderation(props) {
   const localPlayerGameData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
-    if (socket === null) {
+    if (socket === null || game.id === "") {
       props.history.push("/");
       return;
     }

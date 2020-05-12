@@ -24,6 +24,10 @@ function Waiting(props) {
 
   //First and only time in which everything is ready, we set and begin the connection with the server
   useEffect(() => {
+    if (game.id === "") {
+      props.history.push("/");
+      return;
+    }
     setSocket(socketIOClient(ENDPOINT));
     return () => {
       //onUnmount do clean-up events here
