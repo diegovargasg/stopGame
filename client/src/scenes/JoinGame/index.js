@@ -3,12 +3,14 @@ import React, { useState, useContext } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Redirect } from "react-router-dom";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 import { GameContext } from "../../GameContext";
 
 function JoinGame() {
   const [game, setGame] = useContext(GameContext);
   const [valid, setValid] = useState(false);
   const [gameId, setGameId] = useState("");
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [name, setName] = useState("camilo");
 
   const handleSubmit = (event) => {
@@ -17,6 +19,9 @@ function JoinGame() {
       event.preventDefault();
       event.stopPropagation();
     }
+    setLocalPlayer((localPlayer) => {
+      return { ...localPlayer, name: name };
+    });
     setGame((game) => ({
       ...game,
       id: gameId,

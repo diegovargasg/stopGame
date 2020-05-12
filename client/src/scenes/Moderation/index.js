@@ -9,22 +9,21 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import Form from "react-bootstrap/Form";
 import { GameContext } from "../../GameContext";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
   const [wordVotes, setWordVotes] = useState({});
   const [uniqueWords, setUniqueWords] = useState({});
-  const [gameData, setGameData] = useState([
-    _.get(props, "location.state.gameData", {}),
-  ]);
+  const [gameData, setGameData] = useState({});
 
   const letter = _.get(props, "location.state.letter", "");
-  const userData = _.get(props, "location.state.gameData", {});
+  const localPlayerGameData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
     if (socket === null) {
@@ -32,16 +31,32 @@ function Moderation(props) {
       return;
     }
 
+    setGameData((gameData) => {
+      const newGameData = _.cloneDeep(gameData);
+      _.set(newGameData, `${localPlayer.id}-${letter}`, {
+        playerId: localPlayer.id,
+        name: localPlayer.name,
+        words: localPlayerGameData.words,
+      });
+      return newGameData;
+    });
+
     socket.emit("userWords", {
-      socketId: userData.socketId,
-      name: userData.name,
-      letter,
-      words: userData.words,
+      playerId: localPlayer.id,
+      name: localPlayer.name,
+      words: localPlayerGameData.words,
     });
 
     socket.on("otherUserWords", (otherUserData) => {
-      console.log(otherUserData);
-      setGameData((gameData) => [...gameData, otherUserData]);
+      setGameData((gameData) => {
+        const newGameData = _.cloneDeep(gameData);
+        _.set(newGameData, `${otherUserData.playerId}-${letter}`, {
+          playerId: otherUserData.playerId,
+          name: otherUserData.name,
+          words: otherUserData.words,
+        });
+        return newGameData;
+      });
     });
 
     socket.on("otherUserVoted", (data) => {
@@ -80,20 +95,20 @@ function Moderation(props) {
     }
   };
 
-  const handleApprove = (socketId, category, activeSocket, vote) => {
+  const handleApprove = (socketId, category, vote) => {
     if (socket === null) {
       return;
     }
 
     setWordVotes((wordVotes) => {
       const newVote = _.cloneDeep(wordVotes);
-      _.set(newVote, `${socketId}-${category}.${activeSocket}`, vote);
+      _.set(newVote, `${socketId}-${category}.${localPlayer.id}`, vote);
       return newVote;
     });
 
     socket.emit("userVotes", {
       key: `${socketId}-${category}`,
-      voter: activeSocket,
+      voter: localPlayer.id,
       vote: vote,
     });
   };
@@ -125,7 +140,6 @@ function Moderation(props) {
                     isActive={isActive}
                     letter={letter}
                     wordVotes={wordVotes}
-                    localSocketId={_.get(socket, "id", "")}
                   />
                 </Card.Body>
               </Accordion.Collapse>
@@ -181,19 +195,18 @@ export function Category(props) {
         </tr>
       </thead>
       <tbody>
-        {props.gameData.map((value) => {
+        {_.map(props.gameData, (value) => {
           const word = _.get(value, `words.${props.category}`, "");
           return (
             <Player
-              key={value.socketId}
-              socketId={value.socketId}
+              key={value.playerId}
+              socketId={value.playerId}
               name={value.name}
               word={word}
               wordVotes={props.wordVotes}
               category={props.category}
               letter={props.letter}
               handleApprove={props.handleApprove}
-              localSocketId={props.localSocketId}
             />
           );
         })}
@@ -232,12 +245,7 @@ export function Player(props) {
   const [no, setNo] = useState(0);
   const handleApprove = (vote) => {
     setApproved(vote);
-    props.handleApprove(
-      props.socketId,
-      props.category,
-      props.localSocketId,
-      vote
-    );
+    props.handleApprove(props.socketId, props.category, vote);
   };
 
   return (

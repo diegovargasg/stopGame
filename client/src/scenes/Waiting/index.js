@@ -8,15 +8,16 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 import socketIOClient from "socket.io-client";
 
 function Waiting(props) {
   const [players, setPlayers] = useState([]);
   const [player, setPlayer] = useState({});
   const [startGame, setStartGame] = useState(false);
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [game, setGame] = useContext(GameContext);
-  const name = _.get(props, "location.state.name", "");
 
   //@TODO move this to config
   const ENDPOINT = "http://localhost:9000/";
@@ -36,10 +37,17 @@ function Waiting(props) {
 
     socket.emit("joinGame", {
       id: game.id,
-      name,
+      name: localPlayer.name,
       categories: game.categories,
       letters: game.letters,
       rounds: game.rounds,
+    });
+
+    setLocalPlayer((localPlayer) => {
+      return {
+        ...localPlayer,
+        id: socket.id,
+      };
     });
 
     socket.on("allUsers", (data) => {
@@ -95,7 +103,7 @@ function Waiting(props) {
               key={idx}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name}
+              {player.name} {localPlayer.id}
             </ListGroup.Item>
           );
         })}
@@ -120,7 +128,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
-            disabled={players.length <= 1 ? true : false}
+            disabled={players.length <= 1 ? false : false}
           >
             {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
           </Button>
@@ -131,7 +139,6 @@ function Waiting(props) {
           to={{
             pathname: "/game",
             push: true,
-            state: { name },
           }}
         />
       )}

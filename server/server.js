@@ -95,7 +95,7 @@ io.on("connection", (socket) => {
     const socketId = socket.id;
     const user = getUser(socketId);
     const gameId = _.get(user, "gameId", "");
-    console.log(data);
+    console.log("send to the rest of users", data);
     socket.broadcast.to(gameId).emit("otherUserWords", data);
   });
 

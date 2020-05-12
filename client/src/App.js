@@ -9,6 +9,7 @@ import { createBrowserHistory } from "history";
 import Container from "react-bootstrap/Container";
 import { SocketProvider } from "./SocketContext";
 import { GameProvider } from "./GameContext";
+import { LocalPlayerProvider } from "./LocalPlayerContext";
 
 function App() {
   const history = createBrowserHistory();
@@ -19,15 +20,17 @@ function App() {
       <Container fluid style={style}>
         <SocketProvider>
           <GameProvider>
-            <Router history={history}>
-              <Switch>
-                <Route path="/" exact component={Home} />
-                <Route path="/waiting" component={Waiting} />
-                <Route path="/moderation" component={Moderation} />
-                <Route path="/result" component={Result} />
-                <Route path="/game" component={Game} />
-              </Switch>
-            </Router>
+            <LocalPlayerProvider>
+              <Router history={history}>
+                <Switch>
+                  <Route path="/" exact component={Home} />
+                  <Route path="/waiting" component={Waiting} />
+                  <Route path="/moderation" component={Moderation} />
+                  <Route path="/result" component={Result} />
+                  <Route path="/game" component={Game} />
+                </Switch>
+              </Router>
+            </LocalPlayerProvider>
           </GameProvider>
         </SocketProvider>
       </Container>

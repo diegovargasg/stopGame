@@ -10,9 +10,9 @@ import Tooltip from "react-bootstrap/Tooltip";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function Game(props) {
-  const name = _.get(props, "location.state.name", "");
   const letterBadge = useRef(null);
 
   const [letter, setLetter] = useState("");
@@ -21,6 +21,7 @@ function Game(props) {
   const [showBegin, setShowBegin] = useState(false);
   const [words, setWords] = useState({});
   const [stopBtnDisabled, setStopBtnDisabled] = useState(true);
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [gameEnded, setGameEnded] = useState(false);
@@ -161,9 +162,7 @@ function Game(props) {
             push: true,
             state: {
               gameData: {
-                socketId: socket.id,
                 words: words,
-                name: name,
               },
               letter,
             },

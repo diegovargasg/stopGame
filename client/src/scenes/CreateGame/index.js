@@ -7,9 +7,11 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Alert from "react-bootstrap/Alert";
 import { Redirect } from "react-router-dom";
 import { GameContext } from "../../GameContext";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function CreateGame() {
   const [game, setGame] = useContext(GameContext);
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [rounds, setRounds] = useState(5);
   const [categories, setCategories] = useState([]);
   const [redirect, setRedirect] = useState(false);
@@ -61,6 +63,9 @@ function CreateGame() {
         letters: letters,
         rounds: rounds,
       };
+    });
+    setLocalPlayer((localPlayer) => {
+      return { ...localPlayer, name: name };
     });
     setRedirect(true);
   };
@@ -129,9 +134,6 @@ function CreateGame() {
           to={{
             pathname: "/waiting",
             push: true,
-            state: {
-              name,
-            },
           }}
         />
       )}
