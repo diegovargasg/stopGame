@@ -21,7 +21,6 @@ function Moderation(props) {
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
   const [wordVotes, setWordVotes] = useState({});
-  const [uniqueWords, setUniqueWords] = useState({});
   const [gameData, setGameData] = useState({});
 
   const letter = _.get(props, "location.state.letter", "");
@@ -78,17 +77,7 @@ function Moderation(props) {
     console.log("usersVotes", wordVotes);
   }, [wordVotes]);
 
-  const isUnique = (word) => {
-    if (uniqueWords.includes(word)) {
-      return false;
-    } else {
-      setUniqueWords((uniqueWords) => [...uniqueWords, word]);
-      return true;
-    }
-  };
-
   const updateCat = () => {
-    //console.log("updateCat", activeCat, game.categories.length);
     if (activeCat < game.categories.length - 1) {
       setActiveCat(activeCat + 1);
     } else {
@@ -136,7 +125,6 @@ function Moderation(props) {
                   <Category
                     category={category}
                     gameData={gameData}
-                    isUnique={isUnique}
                     updateCat={updateCat}
                     handleApprove={handleApprove}
                     isActive={isActive}
@@ -165,6 +153,17 @@ function Moderation(props) {
 export function Category(props) {
   const tableStyle = { margin: "1rem 0" };
   const [progressBar, setProgressBar] = useState(10);
+  const [allWords, setAllWords] = useState([]);
+
+  const isUnique = (word) => {
+    let cont = 0;
+    _.map(allWords, (playedWord) => {
+      if (playedWord === word) {
+        cont++;
+      }
+    });
+    return cont > 1 ? false : true;
+  };
 
   useEffect(() => {
     /*if (progressBar > 0 && props.isActive) {
@@ -175,6 +174,15 @@ export function Category(props) {
       props.updateCat();
     }*/
   }, [progressBar, props.isActive]);
+
+  useEffect(() => {
+    const allWords = [];
+    _.map(props.gameData, (value) => {
+      const word = _.get(value, `words.${props.category}`, "");
+      allWords.push(word);
+    });
+    setAllWords(allWords);
+  }, [props.gameData]);
 
   return (
     <Table striped bordered style={tableStyle}>
@@ -199,6 +207,7 @@ export function Category(props) {
       <tbody>
         {_.map(props.gameData, (value) => {
           const word = _.get(value, `words.${props.category}`, "");
+          const unique = isUnique(word);
           return (
             <Player
               key={value.playerId}
@@ -208,6 +217,7 @@ export function Category(props) {
               wordVotes={props.wordVotes}
               category={props.category}
               letter={props.letter}
+              isUnique={unique}
               handleApprove={props.handleApprove}
             />
           );
@@ -241,7 +251,6 @@ export function Player(props) {
   }, [props.wordVotes]);
 
   const isValid = _.startsWith(props.word, props.letter);
-  //const isUnique = props.isUnique(props.word);
 
   const [approved, setApproved] = useState();
   const [yes, setYes] = useState(0);
@@ -256,7 +265,7 @@ export function Player(props) {
       <td>{props.name}</td>
       <td>
         <span>
-          {props.word}{" "}
+          {props.word} {props.isUnique}
           {yes > 0 && (
             <Badge pill variant="success">
               {yes}
@@ -269,8 +278,8 @@ export function Player(props) {
           )}
         </span>
       </td>
-      <td>0</td>
-      <td>
+      <td align="center">{yes > no ? (props.isUnique ? 1 : 0.5) : 0}</td>
+      <td align="center">
         {props.id !== localPlayer.id && (
           <ToggleButtonGroup
             type="radio"
