@@ -2,10 +2,6 @@ const _ = require("lodash");
 
 const games = {};
 
-function storeGameIdWords({ socketId, gameId, letter, words }) {
-  games[gameId] = { [letter]: { socketId, words } };
-}
-
 function getGameIdWords(gameId, letter) {}
 
 function clearGameIdWords(gameId, letter) {}
@@ -36,7 +32,6 @@ function getGameDataById(gameId) {
 
 module.exports = {
   addGame,
-  storeGameIdWords,
   getGameIdWords,
   clearGameIdWords,
   getGameDataById,

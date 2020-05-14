@@ -11,12 +11,12 @@ import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
-//import { RemotePlayersContext } from "../../RemotePlayersContext";
+import { RemotePlayersContext } from "../../RemotePlayersContext";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
-  //const [remotePlayers, setRemotePlayers] = useContext(RemotePlayers);
+  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
@@ -97,19 +97,19 @@ function Moderation(props) {
     }
   };
 
-  const handleApprove = (socketId, category, vote) => {
+  const handleApprove = (id, category, vote) => {
     if (socket === null) {
       return;
     }
 
     setWordVotes((wordVotes) => {
       const newVote = _.cloneDeep(wordVotes);
-      _.set(newVote, `${socketId}-${category}.${localPlayer.id}`, vote);
+      _.set(newVote, `${id}-${category}.${localPlayer.id}`, vote);
       return newVote;
     });
 
     socket.emit("userVotes", {
-      key: `${socketId}-${category}`,
+      key: `${id}-${category}`,
       voter: localPlayer.id,
       vote: vote,
     });
@@ -202,7 +202,7 @@ export function Category(props) {
           return (
             <Player
               key={value.playerId}
-              socketId={value.playerId}
+              id={value.playerId}
               name={value.name}
               word={word}
               wordVotes={props.wordVotes}
@@ -218,10 +218,11 @@ export function Category(props) {
 }
 
 export function Player(props) {
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   useEffect(() => {
     const votesByPlayerCat = _.get(
       props.wordVotes,
-      `${props.socketId}-${props.category}`,
+      `${props.id}-${props.category}`,
       {}
     );
 
@@ -247,7 +248,7 @@ export function Player(props) {
   const [no, setNo] = useState(0);
   const handleApprove = (vote) => {
     setApproved(vote);
-    props.handleApprove(props.socketId, props.category, vote);
+    props.handleApprove(props.id, props.category, vote);
   };
 
   return (
@@ -270,11 +271,11 @@ export function Player(props) {
       </td>
       <td>0</td>
       <td>
-        {props.socketId !== props.localSocketId && (
+        {props.id !== localPlayer.id && (
           <ToggleButtonGroup
             type="radio"
             value={approved}
-            name={`${props.socketId}-${props.category}`}
+            name={`${props.id}-${props.category}`}
             onChange={handleApprove}
           >
             <ToggleButton

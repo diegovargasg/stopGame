@@ -51,10 +51,10 @@ function Waiting(props) {
     socket.on("allUsers", (data) => {
       console.log(data);
       const localPlayer = _.find(data, (player) => {
-        return player.socketId === socket.id;
+        return player.id === socket.id;
       });
       const remotePlayers = _.filter(data, (player) => {
-        return player.socketId !== socket.id;
+        return player.id !== socket.id;
       });
       console.log("remotePlayers", remotePlayers);
       console.log("localPlayers", localPlayer);
@@ -81,7 +81,6 @@ function Waiting(props) {
   };
 
   const styleUl = { margin: "1rem 0" };
-  console.log("lengt", remotePlayers.length);
   return (
     <React.Fragment>
       <h5>Waiting for other players...</h5>

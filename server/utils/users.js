@@ -3,13 +3,13 @@ const _ = require("lodash");
 
 const allUsers = [];
 
-function addUser({ socketId, gameId, name, ready, points }) {
-  allUsers.push({ socketId, gameId, name, ready, points });
+function addUser({ id, gameId, name, ready, points }) {
+  allUsers.push({ id, gameId, name, ready, points });
 }
 
-function getUser(socketId) {
+function getUser(id) {
   return _.find(allUsers, (user) => {
-    return user.socketId === socketId;
+    return user.id === id;
   });
 }
 
@@ -19,15 +19,15 @@ function getAllUsersByGameId(gameId) {
   });
 }
 
-function removeUser(socketId) {
+function removeUser(id) {
   return _.remove(allUsers, (user) => {
-    return user.socketId === socketId;
+    return user.id === id;
   });
 }
 
-function updateUserReady(socketId, ready) {
+function updateUserReady(id, ready) {
   const userIndex = _.findIndex(allUsers, (user) => {
-    return user.socketId === socketId;
+    return user.id === id;
   });
 
   _.set(allUsers, `${userIndex}.ready`, ready);
