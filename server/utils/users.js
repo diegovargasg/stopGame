@@ -3,8 +3,8 @@ const _ = require("lodash");
 
 const allUsers = [];
 
-function addUser({ socketId, gameId, name, ready }) {
-  allUsers.push({ socketId, gameId, name, ready });
+function addUser({ socketId, gameId, name, ready, points }) {
+  allUsers.push({ socketId, gameId, name, ready, points });
 }
 
 function getUser(socketId) {

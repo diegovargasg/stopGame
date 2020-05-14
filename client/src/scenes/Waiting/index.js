@@ -9,13 +9,14 @@ import Row from "react-bootstrap/Row";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
+import { RemotePlayersContext } from "../../RemotePlayersContext";
 import socketIOClient from "socket.io-client";
 
 function Waiting(props) {
-  const [players, setPlayers] = useState([]);
-  const [player, setPlayer] = useState({});
+  //const [players, setPlayers] = useState([]);
   const [startGame, setStartGame] = useState(false);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
+  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [game, setGame] = useContext(GameContext);
 
@@ -47,19 +48,18 @@ function Waiting(props) {
       rounds: game.rounds,
     });
 
-    setLocalPlayer((localPlayer) => {
-      return {
-        ...localPlayer,
-        id: socket.id,
-      };
-    });
-
     socket.on("allUsers", (data) => {
-      const currentPlayer = _.find(data, (player) => {
+      console.log(data);
+      const localPlayer = _.find(data, (player) => {
         return player.socketId === socket.id;
       });
-      setPlayers(data);
-      setPlayer(currentPlayer);
+      const remotePlayers = _.filter(data, (player) => {
+        return player.socketId !== socket.id;
+      });
+      console.log("remotePlayers", remotePlayers);
+      console.log("localPlayers", localPlayer);
+      setRemotePlayers(remotePlayers);
+      setLocalPlayer(localPlayer);
     });
 
     socket.on("startGame", (data) => {
@@ -77,11 +77,11 @@ function Waiting(props) {
   }, [socket]);
 
   const handleReady = () => {
-    socket.emit("userReady", !_.get(player, "ready", false));
+    socket.emit("userReady", !_.get(localPlayer, "ready", false));
   };
 
   const styleUl = { margin: "1rem 0" };
-
+  console.log("lengt", remotePlayers.length);
   return (
     <React.Fragment>
       <h5>Waiting for other players...</h5>
@@ -100,14 +100,23 @@ function Waiting(props) {
         </p>
       </Alert>
       <ListGroup style={styleUl} as="ul">
-        {players.map((player, idx) => {
+        {localPlayer && (
+          <ListGroup.Item
+            as="li"
+            key={localPlayer.id}
+            variant={localPlayer.ready ? "success" : "light"}
+          >
+            {localPlayer.name} {localPlayer.id}
+          </ListGroup.Item>
+        )}
+        {_.map(remotePlayers, (player) => {
           return (
             <ListGroup.Item
               as="li"
-              key={idx}
+              key={player.id}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name} {localPlayer.id}
+              {player.name} {player.id}
             </ListGroup.Item>
           );
         })}
@@ -128,13 +137,15 @@ function Waiting(props) {
         </Col>
         <Col>
           <Button
-            variant={!_.get(player, "ready", false) ? `primary` : `secondary`}
+            variant={
+              !_.get(localPlayer, "ready", false) ? `primary` : `secondary`
+            }
             size="lg"
             block
             onClick={handleReady}
-            disabled={players.length <= 1 ? false : false}
+            disabled={remotePlayers.length > 0 ? false : true}
           >
-            {!_.get(player, "ready", false) ? `Ready` : `Not ready`}
+            {!_.get(localPlayer, "ready", false) ? `Ready` : `Not ready`}
           </Button>
         </Col>
       </Row>

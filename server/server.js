@@ -36,9 +36,10 @@ io.on("connection", (socket) => {
     const letters = _.get(data, "letters", []);
     const rounds = _.get(data, "rounds", 0);
     const ready = false;
+    const points = 0;
     const socketId = socket.id;
     //update list of players of that game id
-    addUser({ socketId, gameId, name, ready });
+    addUser({ socketId, gameId, name, ready, points });
 
     if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
       //Is a joiner and needs the categories

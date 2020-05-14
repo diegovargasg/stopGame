@@ -7,6 +7,7 @@ import Result from "./scenes/Result/";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { createBrowserHistory } from "history";
 import Container from "react-bootstrap/Container";
+import { RemotePlayersProvider } from "./RemotePlayersContext";
 import { SocketProvider } from "./SocketContext";
 import { GameProvider } from "./GameContext";
 import { LocalPlayerProvider } from "./LocalPlayerContext";
@@ -21,15 +22,17 @@ function App() {
         <SocketProvider>
           <GameProvider>
             <LocalPlayerProvider>
-              <Router history={history}>
-                <Switch>
-                  <Route path="/" exact component={Home} />
-                  <Route path="/waiting" component={Waiting} />
-                  <Route path="/moderation" component={Moderation} />
-                  <Route path="/result" component={Result} />
-                  <Route path="/game" component={Game} />
-                </Switch>
-              </Router>
+              <RemotePlayersProvider>
+                <Router history={history}>
+                  <Switch>
+                    <Route path="/" exact component={Home} />
+                    <Route path="/waiting" component={Waiting} />
+                    <Route path="/moderation" component={Moderation} />
+                    <Route path="/result" component={Result} />
+                    <Route path="/game" component={Game} />
+                  </Switch>
+                </Router>
+              </RemotePlayersProvider>
             </LocalPlayerProvider>
           </GameProvider>
         </SocketProvider>

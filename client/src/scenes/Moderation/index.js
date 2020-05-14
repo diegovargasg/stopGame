@@ -11,10 +11,12 @@ import Badge from "react-bootstrap/Badge";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
+//import { RemotePlayersContext } from "../../RemotePlayersContext";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
+  //const [remotePlayers, setRemotePlayers] = useContext(RemotePlayers);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
