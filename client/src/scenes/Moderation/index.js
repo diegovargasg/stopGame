@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Redirect } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import Table from "react-bootstrap/Table";
@@ -18,12 +18,12 @@ function Moderation(props) {
   const [socket, setSocket] = useContext(SocketContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
+  const [letter, setLetter] = useState();
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
   const [wordVotes, setWordVotes] = useState({});
   const [gameData, setGameData] = useState({});
 
-  const letter = _.get(props, "location.state.letter", "");
   const localPlayerGameData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
@@ -31,6 +31,8 @@ function Moderation(props) {
       props.history.push("/");
       return;
     }
+
+    setLetter(game.letters[game.currentRound]);
 
     setGameData((gameData) => {
       const newGameData = _.cloneDeep(gameData);
@@ -69,9 +71,9 @@ function Moderation(props) {
     });
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Game data changed", gameData);
-  }, [gameData]);
+  }, [gameData]);*/
 
   useEffect(() => {
     console.log("usersVotes", wordVotes);
@@ -82,7 +84,9 @@ function Moderation(props) {
       setActiveCat(activeCat + 1);
     } else {
       //Moderation finished
-      //setRedirect(true);
+      const currentRound = game.currentRound + 1;
+      setGame((game) => ({ ...game, currentRound: currentRound }));
+      setRedirect(true);
     }
   };
 
@@ -96,6 +100,12 @@ function Moderation(props) {
       _.set(newVote, `${id}-${category}.${localPlayer.id}`, vote);
       return newVote;
     });
+
+    if (id === localPlayer.id) {
+      setLocalPlayer((localPlayer) => {
+        return { ...localPlayer, points: 100 };
+      });
+    }
 
     socket.emit("userVotes", {
       key: `${id}-${category}`,
@@ -153,6 +163,7 @@ function Moderation(props) {
 export function Category(props) {
   const tableStyle = { margin: "1rem 0" };
   const [allWords, setAllWords] = useState([]);
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
 
   //@TODO: Fix this unique detection, is very ugly
   const isUnique = (word) => {
@@ -198,8 +209,25 @@ export function Category(props) {
       </thead>
       <tbody>
         {_.map(props.gameData, (value) => {
+          const votesByPlayerCat = _.get(
+            props.wordVotes,
+            `${value.playerId}-${props.category}`,
+            {}
+          );
           const word = _.get(value, `words.${props.category}`, "");
           const unique = isUnique(word);
+          let yes = 0;
+          let no = 0;
+          _.forEach(votesByPlayerCat, (vote) => {
+            if (vote === 1) {
+              yes++;
+            } else if (vote === -1) {
+              no++;
+            }
+          });
+          const points = yes > no ? (isUnique ? 1 : 0.5) : 0;
+          const enableVote = value.playerId === localPlayer.id ? false : true;
+
           return (
             <Player
               key={value.playerId}
@@ -210,7 +238,11 @@ export function Category(props) {
               category={props.category}
               letter={props.letter}
               isUnique={unique}
+              yes={yes}
+              no={no}
+              points={points}
               handleApprove={props.handleApprove}
+              enableVote={enableVote}
             />
           );
         })}
@@ -220,33 +252,10 @@ export function Category(props) {
 }
 
 export function Player(props) {
-  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
-  useEffect(() => {
-    const votesByPlayerCat = _.get(
-      props.wordVotes,
-      `${props.id}-${props.category}`,
-      {}
-    );
-
-    let yes = 0;
-    let no = 0;
-
-    _.forEach(votesByPlayerCat, (vote) => {
-      if (vote === 1) {
-        yes++;
-      } else if (vote === -1) {
-        no++;
-      }
-    });
-    setYes(yes);
-    setNo(no);
-  }, [props.wordVotes]);
+  const [approved, setApproved] = useState();
 
   const isValid = _.startsWith(props.word, props.letter);
 
-  const [approved, setApproved] = useState();
-  const [yes, setYes] = useState(0);
-  const [no, setNo] = useState(0);
   const handleApprove = (vote) => {
     setApproved(vote);
     props.handleApprove(props.id, props.category, vote);
@@ -258,21 +267,21 @@ export function Player(props) {
       <td>
         <span>
           {props.word} {props.isUnique}
-          {yes > 0 && (
+          {props.yes > 0 && (
             <Badge pill variant="success">
-              {yes}
+              {props.yes}
             </Badge>
           )}
-          {no > 0 && (
+          {props.no > 0 && (
             <Badge pill variant="danger">
-              {no}
+              {props.no}
             </Badge>
           )}
         </span>
       </td>
-      <td align="center">{yes > no ? (props.isUnique ? 1 : 0.5) : 0}</td>
+      <td align="center">{props.points}</td>
       <td align="center">
-        {props.id !== localPlayer.id && (
+        {props.enableVote && (
           <ToggleButtonGroup
             type="radio"
             value={approved}

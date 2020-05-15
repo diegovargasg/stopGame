@@ -13,7 +13,6 @@ import { RemotePlayersContext } from "../../RemotePlayersContext";
 import socketIOClient from "socket.io-client";
 
 function Waiting(props) {
-  //const [players, setPlayers] = useState([]);
   const [startGame, setStartGame] = useState(false);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);

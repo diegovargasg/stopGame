@@ -2,12 +2,12 @@ import _ from "lodash";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { Redirect } from "react-router-dom";
 import Table from "react-bootstrap/Table";
-import Button from "react-bootstrap/Button";
-import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
 import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
 import ProgressBar from "../../components/ProgressBar";
+import RandomLetter from "../../components/RandomLetter";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
 
@@ -15,7 +15,6 @@ function Game(props) {
   const letterBadge = useRef(null);
 
   const [letter, setLetter] = useState("");
-  const [letterCounter, setLetterCounter] = useState(1500);
   const [gameStarted, setGameStarted] = useState(false);
   const [showBegin, setShowBegin] = useState(false);
   const [words, setWords] = useState({});
@@ -29,11 +28,6 @@ function Game(props) {
     setShowBegin(false);
   };
 
-  const getRandomLetter = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    return chars.charAt(Math.floor(Math.random() * chars.length));
-  };
-
   useEffect(() => {
     if (socket === null || game.id === "") {
       props.history.push("/");
@@ -44,26 +38,20 @@ function Game(props) {
       setGameEnded(data);
     });
 
+    //@TODO refator this
     const tmpCat = {};
     game.categories.map((category) => {
       tmpCat[category] = "";
     });
 
     setWords(tmpCat);
+    console.log(game.currentRound, game.letters);
   }, []);
 
-  useEffect(() => {
-    if (letterCounter > 0) {
-      setTimeout(() => {
-        setLetter(getRandomLetter());
-        setLetterCounter(letterCounter - 100);
-      }, 100);
-    } else {
-      setLetter(_.first(game.letters));
-      setGameStarted(true);
-      setShowBegin(true);
-    }
-  }, [letterCounter]);
+  const randomLetterEnded = () => {
+    setGameStarted(true);
+    setShowBegin(true);
+  };
 
   const stopProgressBar = () => {
     setGameStarted(false);
@@ -88,13 +76,13 @@ function Game(props) {
     <React.Fragment>
       <h5>
         Words that begin with the letter{" "}
-        <span className="h3">
-          <Badge
-            ref={letterBadge}
-            variant={gameStarted ? "primary" : "secondary"}
-          >
-            {letter}
-          </Badge>
+        <span className="h3" ref={letterBadge}>
+          <RandomLetter
+            counter={10}
+            speed={250}
+            callBack={randomLetterEnded}
+            finalLetter={game.letters[game.currentRound]}
+          />
         </span>
         <Overlay
           target={letterBadge.current}
@@ -159,7 +147,6 @@ function Game(props) {
               gameData: {
                 words: words,
               },
-              letter,
             },
           }}
         />

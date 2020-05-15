@@ -24,6 +24,7 @@ function JoinGame() {
     setGame((game) => ({
       ...game,
       id: gameId,
+      currentRound: 0,
     }));
     setValid(true);
   };

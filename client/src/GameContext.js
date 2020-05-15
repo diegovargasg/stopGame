@@ -9,6 +9,7 @@ export const GameProvider = (props) => {
     rounds: 0,
     letters: [],
     scores: {},
+    currentRound: 0,
   };
   const [game, setGame] = useState(gameDefault);
 

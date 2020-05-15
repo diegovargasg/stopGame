@@ -31,6 +31,7 @@ function CreateGame() {
     "Movies",
   ];
 
+  //@TODO: move this and the one from RANDOMLETTER to standalone function in utils
   const getRandomLetters = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     let lettersSet = new Set();
@@ -61,6 +62,7 @@ function CreateGame() {
         categories: categories.sort(),
         letters: letters,
         rounds: rounds,
+        currentRound: 0,
       };
     });
     setLocalPlayer((localPlayer) => {
