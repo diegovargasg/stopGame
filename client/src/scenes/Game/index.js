@@ -7,7 +7,7 @@ import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
 import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import ProgressBar from "../../components/ProgressBar";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
 
@@ -23,7 +23,6 @@ function Game(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [gameEnded, setGameEnded] = useState(false);
-  const [progressBar, setProgressBar] = useState(30);
 
   const onAdd = (category, word) => {
     setWords((words) => ({ ...words, [category]: word }));
@@ -66,15 +65,10 @@ function Game(props) {
     }
   }, [letterCounter]);
 
-  useEffect(() => {
-    if (progressBar > 0 && gameStarted) {
-      setTimeout(() => {
-        setProgressBar(progressBar - 1);
-      }, 1000);
-    } else if (progressBar <= 0 && gameStarted) {
-      setGameEnded(true);
-    }
-  }, [progressBar, gameStarted]);
+  const stopProgressBar = () => {
+    setGameStarted(false);
+    setGameEnded(true);
+  };
 
   useEffect(() => {
     //enable STOP button when all words are filled
@@ -120,13 +114,16 @@ function Game(props) {
             <th>Category</th>
             <th>Word</th>
             <th>
-              <ProgressBar
-                variant="primary"
-                min="0"
-                max="30"
-                striped
-                now={progressBar}
-              />
+              {gameStarted && (
+                <ProgressBar
+                  variant="primary"
+                  min="0"
+                  max="30"
+                  updateRate={1000}
+                  callBack={stopProgressBar}
+                  striped
+                />
+              )}
             </th>
           </tr>
         </thead>

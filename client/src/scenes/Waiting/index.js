@@ -142,7 +142,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
-            disabled={remotePlayers.length > 0 ? false : true}
+            disabled={remotePlayers.length > 0 ? false : false}
           >
             {!_.get(localPlayer, "ready", false) ? `Ready` : `Not ready`}
           </Button>

@@ -8,7 +8,7 @@ import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import ProgressBar from "../../components/ProgressBar";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
@@ -152,9 +152,9 @@ function Moderation(props) {
 
 export function Category(props) {
   const tableStyle = { margin: "1rem 0" };
-  const [progressBar, setProgressBar] = useState(10);
   const [allWords, setAllWords] = useState([]);
 
+  //@TODO: Fix this unique detection, is very ugly
   const isUnique = (word) => {
     let cont = 0;
     _.map(allWords, (playedWord) => {
@@ -164,16 +164,6 @@ export function Category(props) {
     });
     return cont > 1 ? false : true;
   };
-
-  useEffect(() => {
-    /*if (progressBar > 0 && props.isActive) {
-      setTimeout(() => {
-        setProgressBar(progressBar - 1);
-      }, 1000);
-    } else if (progressBar <= 0 && props.isActive) {
-      props.updateCat();
-    }*/
-  }, [progressBar, props.isActive]);
 
   useEffect(() => {
     const allWords = [];
@@ -195,10 +185,12 @@ export function Category(props) {
             {props.isActive && (
               <ProgressBar
                 variant="primary"
-                min="0"
-                max="10"
+                min={0}
+                max={10}
+                now={10}
+                updateRate={1000}
+                callBack={props.updateCat}
                 striped
-                now={progressBar}
               />
             )}
           </th>
