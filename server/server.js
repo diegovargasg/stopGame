@@ -15,7 +15,12 @@ const {
   unReadyAllUsersByGameId,
 } = require("./utils/users");
 
-const { addGame, getGameDataById, removeGameById } = require("./utils/games");
+const {
+  addGame,
+  getGameDataById,
+  removeGameById,
+  startGameById,
+} = require("./utils/games");
 
 const app = express();
 const server = http.createServer(app);
@@ -80,8 +85,11 @@ io.on("connection", (socket) => {
     );
     console.log(`user disconneted ${mainData.id}`);
 
-    //All the users left, clean up the gameId and users
-    if (_.size(getAllUsersByGameId(mainData.gameId)) <= 1) {
+    //All the users left, clean up in case the game has already started
+    const gameData = getGameDataById(mainData.gameId);
+    if (_.size(getAllUsersByGameId(mainData.gameId)) <= 1 && gameData.started) {
+      //Emit message to disconnect all possible remaining users
+      io.to(mainData.gameId).emit("fatalError", "All your opponents left");
       removeAllUsersByGameId(mainData.gameId);
       removeGameById(mainData.gameId);
     }
@@ -101,6 +109,7 @@ io.on("connection", (socket) => {
     console.log(`user is ready ${mainData.id}`);
     if (allUsersReady(mainData.gameId)) {
       io.to(mainData.gameId).emit("startGame", true);
+      startGameById(mainData.gameId);
       console.log("all users are ready");
     }
   });

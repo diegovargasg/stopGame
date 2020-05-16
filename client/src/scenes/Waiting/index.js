@@ -65,6 +65,15 @@ function Waiting(props) {
       setStartGame(data);
     });
 
+    socket.on("fatalError", (data) => {
+      socket.close();
+      props.history.push({
+        pathname: "/",
+        state: { error: data },
+      });
+      return;
+    });
+
     socket.on("gameData", (data) => {
       if (_.isEmpty(data.categories) || _.isEmpty(data.letters)) {
         socket.close();
