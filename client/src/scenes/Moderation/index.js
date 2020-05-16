@@ -9,14 +9,15 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "../../components/ProgressBar";
-import { GameContext } from "../../GameContext";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
+import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
+  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [letter, setLetter] = useState();
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
@@ -70,12 +71,20 @@ function Moderation(props) {
     });
   }, []);
 
-  /*useEffect(() => {
-    console.log("Game data changed", gameData);
-  }, [gameData]);*/
-
   useEffect(() => {
-    console.log("usersVotes", wordVotes);
+    const minNumVotes = (_.size(remotePlayers) + 1) * _.size(remotePlayers);
+    const nameActiveCat = game.categories[activeCat];
+    let numVotesByCat = 0;
+
+    _.map(wordVotes, (player) => {
+      const votesActiveCat = _.get(player, `${nameActiveCat}`, {});
+      numVotesByCat += _.size(votesActiveCat);
+    });
+
+    if (numVotesByCat >= minNumVotes) {
+      console.log("all players voted", numVotesByCat, minNumVotes);
+      _.delay(updateCat, 1500);
+    }
   }, [wordVotes]);
 
   const updateCat = () => {
@@ -220,8 +229,7 @@ export function Category(props) {
             }
           });
           const points = yes > no ? (isUnique ? 1 : 0.5) : 0;
-          //const enableVote = value.playerId === localPlayer.id ? false : true;
-          const enableVote = true;
+          const enableVote = value.playerId === localPlayer.id ? false : true;
 
           return (
             <Player
@@ -260,17 +268,8 @@ export function Player(props) {
   };
 
   useEffect(() => {
-    console.log("points updated LocalPlayer", localPlayer);
-  }, [localPlayer]);
-
-  useEffect(() => {
-    console.log("points updated remotePlayers", remotePlayers);
-  }, [remotePlayers]);
-
-  useEffect(() => {
     if (props.id === localPlayer.id) {
       setLocalPlayer((setLocalPlayer) => {
-        //const newPoints = setLocalPlayer.points + props.points;
         const newLocalPlayer = _.cloneDeep(localPlayer);
         _.set(
           newLocalPlayer,
