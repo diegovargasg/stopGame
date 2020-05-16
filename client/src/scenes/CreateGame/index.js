@@ -14,7 +14,7 @@ function CreateGame() {
   const [rounds, setRounds] = useState(5);
   const [categories, setCategories] = useState([]);
   const [redirect, setRedirect] = useState(false);
-  const [name, setName] = useState("diego");
+  const [name, setName] = useState("");
   const [catAlert, setCatAlert] = useState(false);
   const categoriesNames = [
     "Names",
@@ -83,7 +83,7 @@ function CreateGame() {
           maxLength="15"
           onChange={(event) => setName(event.target.value)}
           autoComplete="off"
-          value="Diego"
+          value={name}
         />
       </Form.Group>
       <Form.Group className="col">

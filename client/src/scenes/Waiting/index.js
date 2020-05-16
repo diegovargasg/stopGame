@@ -123,7 +123,7 @@ function Waiting(props) {
             key={localPlayer.id}
             variant={localPlayer.ready ? "success" : "light"}
           >
-            {localPlayer.name} {localPlayer.id}
+            {localPlayer.name}
           </ListGroup.Item>
         )}
         {_.map(remotePlayers, (player) => {
@@ -133,7 +133,7 @@ function Waiting(props) {
               key={player.id}
               variant={player.ready ? "success" : "light"}
             >
-              {player.name} {player.id}
+              {player.name}
             </ListGroup.Item>
           );
         })}
