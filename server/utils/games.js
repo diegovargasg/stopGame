@@ -12,9 +12,9 @@ function getGameDataById(gameId) {
     return game.id === gameId;
   });
   return {
-    categories: game.categories,
-    letters: game.letters,
-    rounds: game.rounds,
+    categories: _.get(game, "categories", []),
+    letters: _.get(game, "letters", []),
+    rounds: _.get(game, "rounds", 0),
   };
 }
 
