@@ -20,7 +20,7 @@ function Waiting(props) {
   const [game, setGame] = useContext(GameContext);
 
   //@TODO move this to config
-  const ENDPOINT = "http://localhost:9000/";
+  const ENDPOINT = "https://stopthegame.herokuapp.com:9000";
 
   //First and only time in which everything is ready, we set and begin the connection with the server
   useEffect(() => {
