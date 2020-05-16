@@ -1,6 +1,7 @@
 const express = require("express");
 const _ = require("lodash");
-const port = process.env.PORT || "9000";
+const cors = require("cors");
+const port = process.env.PORT || "5000";
 const http = require("http");
 const socketIo = require("socket.io");
 const path = require("path");
@@ -23,6 +24,7 @@ const {
 } = require("./utils/games");
 
 const app = express();
+app.use(cors());
 const server = http.createServer(app);
 const io = socketIo(server);
 

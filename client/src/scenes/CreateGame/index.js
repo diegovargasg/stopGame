@@ -70,6 +70,7 @@ function CreateGame() {
     });
     setRedirect(true);
   };
+  const alertStyle = { "margin-top": "1rem" };
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -112,7 +113,7 @@ function CreateGame() {
           })}
         </ToggleButtonGroup>
         {catAlert && (
-          <Alert className="row" variant="danger">
+          <Alert className="row" variant="danger" style={alertStyle}>
             Please select 5 categories
           </Alert>
         )}

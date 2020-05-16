@@ -50,6 +50,7 @@ function JoinGame() {
             required
             minLength="6"
             maxLength="6"
+            autoComplete="off"
             onChange={(event) => {
               setGameId(event.target.value);
             }}

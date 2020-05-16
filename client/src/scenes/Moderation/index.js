@@ -121,6 +121,8 @@ function Moderation(props) {
     });
   };
 
+  const styleCardBody = { padding: 0 };
+
   return (
     <React.Fragment>
       <h5>
@@ -138,7 +140,7 @@ function Moderation(props) {
                 <h5>{category}</h5>
               </Card.Header>
               <Accordion.Collapse eventKey={index} className="container-fluid">
-                <Card.Body>
+                <Card.Body style={styleCardBody}>
                   <Category
                     category={category}
                     gameData={gameData}
@@ -194,12 +196,12 @@ export function Category(props) {
   }, [props.gameData]);
 
   return (
-    <Table striped bordered style={tableStyle}>
+    <Table responsive striped bordered style={tableStyle} size="sm">
       <thead>
         <tr>
           <th>Player</th>
           <th>Word</th>
-          <th>Points</th>
+          <th>Pts</th>
           <th>
             {props.isActive && (
               <ProgressBar
@@ -305,14 +307,16 @@ export function Player(props) {
       <td>{props.name}</td>
       <td>
         <span>
-          {props.word} {props.isUnique}
+          {_.isEmpty(props.word) ? "--" : props.word}
           {props.yes > 0 && (
             <Badge pill variant="success">
+              {" "}
               {props.yes}
             </Badge>
           )}
           {props.no > 0 && (
             <Badge pill variant="danger">
+              {" "}
               {props.no}
             </Badge>
           )}
@@ -331,6 +335,7 @@ export function Player(props) {
               variant={approved === 1 ? "primary" : "secondary"}
               value={1}
               disabled={!isValid}
+              size="sm"
             >
               Yes
             </ToggleButton>
@@ -338,6 +343,7 @@ export function Player(props) {
               variant={approved === -1 ? "primary" : "secondary"}
               value={-1}
               disabled={!isValid}
+              size="sm"
             >
               No
             </ToggleButton>

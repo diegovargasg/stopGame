@@ -128,7 +128,7 @@ function Results(props) {
         )}
       </Row>
 
-      <Table striped bordered style={tableStyle}>
+      <Table striped bordered style={tableStyle} size="sm">
         <thead>
           <tr>
             <th>Names</th>

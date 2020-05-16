@@ -87,11 +87,7 @@ function Game(props) {
             />
           </span>
         )}
-        <Overlay
-          target={letterBadge.current}
-          show={showBegin}
-          placement="right"
-        >
+        <Overlay target={letterBadge.current} show={showBegin} placement="left">
           {(props) => (
             <Tooltip id="overlay-example" {...props}>
               Play!
@@ -99,7 +95,7 @@ function Game(props) {
           )}
         </Overlay>
       </h5>
-      <Table striped bordered>
+      <Table striped bordered size="sm">
         <thead>
           <tr>
             <th>Category</th>
