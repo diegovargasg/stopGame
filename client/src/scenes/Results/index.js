@@ -10,6 +10,7 @@ function Results(props) {
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [totalPointsByPlayer, setTotalPointsByPlayer] = useState([]);
+  const [playedLetters, setPlayedLetters] = useState([]);
   const tableStyle = { margin: "1rem 0" };
 
   const getLetterPoints = (letter, points) => {
@@ -23,19 +24,13 @@ function Results(props) {
   const getTotalPoints = (points) => {
     let totalPoints = 0;
     let singleLetterPoints = {};
-    _.map(game.letters, (letter, key) => {
-      if (key < game.currentRound) {
-        const letterPoints = getLetterPoints(letter, points);
-        totalPoints += letterPoints[letter];
-        singleLetterPoints[letter] = letterPoints[letter];
-      }
+    _.map(playedLetters, (letter) => {
+      const letterPoints = getLetterPoints(letter, points);
+      totalPoints += letterPoints[letter];
+      singleLetterPoints[letter] = letterPoints[letter];
     });
     return { totalPoints: totalPoints, ...singleLetterPoints };
   };
-
-  useEffect(() => {
-    console.log(totalPointsByPlayer);
-  }, [totalPointsByPlayer]);
 
   useEffect(() => {
     const localPlayerPoints = [
@@ -62,6 +57,11 @@ function Results(props) {
     );
 
     setTotalPointsByPlayer(finalAllPoints);
+  }, [playedLetters]);
+
+  useEffect(() => {
+    const letters = _.take(game.letters, game.currentRound);
+    setPlayedLetters(letters);
   }, []);
 
   return (
@@ -71,10 +71,8 @@ function Results(props) {
         <thead>
           <tr>
             <th>Names</th>
-            {_.map(game.letters, (letter, key) => {
-              if (key < game.currentRound) {
-                return <th key={letter}>{letter}</th>;
-              }
+            {_.map(playedLetters, (letter) => {
+              return <th key={letter}>{letter}</th>;
             })}
             <th>Total</th>
           </tr>
@@ -84,10 +82,8 @@ function Results(props) {
             return (
               <tr key={player.name}>
                 <td>{player.name}</td>
-                {_.map(game.letters, (letter, key) => {
-                  if (key < game.currentRound) {
-                    return <td key={letter}>{player[letter]}</td>;
-                  }
+                {_.map(playedLetters, (letter) => {
+                  return <td key={letter}>{player[letter]}</td>;
                 })}
                 <td>{player.totalPoints}</td>
               </tr>
