@@ -33,6 +33,11 @@ function Results(props) {
   };
 
   useEffect(() => {
+    if (localPlayer.id === "") {
+      props.history.push("/");
+      return;
+    }
+
     const localPlayerPoints = [
       {
         id: localPlayer.id,

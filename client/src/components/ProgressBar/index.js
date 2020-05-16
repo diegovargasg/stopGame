@@ -10,7 +10,7 @@ export default (props) => {
         setNow(now - 1);
       }, props.updateRate);
     } else {
-      //props.callBack();
+      props.callBack();
     }
   }, [now]);
 
