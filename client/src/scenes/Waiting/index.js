@@ -66,6 +66,15 @@ function Waiting(props) {
     });
 
     socket.on("gameData", (data) => {
+      if (_.isEmpty(data.categories) || _.isEmpty(data.letters)) {
+        socket.close();
+        props.history.push({
+          pathname: "/",
+          state: { error: "Game doesn't exist" },
+        });
+        return;
+      }
+
       setGame((game) => ({
         ...game,
         categories: data.categories,
@@ -141,7 +150,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
-            disabled={remotePlayers.length > 0 ? false : false}
+            disabled={remotePlayers.length > 0 ? false : true}
           >
             {!_.get(localPlayer, "ready", false) ? `Ready` : `Not ready`}
           </Button>
