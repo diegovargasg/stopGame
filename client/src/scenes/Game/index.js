@@ -55,7 +55,6 @@ function Game(props) {
   };
 
   const stopProgressBar = () => {
-    setGameStarted(false);
     setGameEnded(true);
   };
 

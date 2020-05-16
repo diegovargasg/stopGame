@@ -27,6 +27,14 @@ function Moderation(props) {
   const localPlayerGameData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
+    socket.emit("userWords", {
+      playerId: localPlayer.id,
+      name: localPlayer.name,
+      words: localPlayerGameData.words,
+    });
+  }, [gameData]);
+
+  useEffect(() => {
     if (socket === null || game.id === "") {
       props.history.push("/");
       return;
@@ -43,12 +51,6 @@ function Moderation(props) {
         words: localPlayerGameData.words,
       });
       return newGameData;
-    });
-
-    socket.emit("userWords", {
-      playerId: localPlayer.id,
-      name: localPlayer.name,
-      words: localPlayerGameData.words,
     });
 
     socket.on("otherUserWords", (otherUserData) => {
