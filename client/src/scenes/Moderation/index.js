@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, PureComponent } from "react";
 import { Redirect } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import Table from "react-bootstrap/Table";
@@ -10,13 +10,12 @@ import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import ProgressBar from "../../components/ProgressBar";
 import { GameContext } from "../../GameContext";
-import { LocalPlayerContext } from "../../LocalPlayerContext";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
+import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
-  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [letter, setLetter] = useState();
   const [redirect, setRedirect] = useState(false);
@@ -90,25 +89,19 @@ function Moderation(props) {
     }
   };
 
-  const handleApprove = (id, category, vote) => {
+  const handleVote = (id, category, vote) => {
     if (socket === null) {
       return;
     }
 
     setWordVotes((wordVotes) => {
       const newVote = _.cloneDeep(wordVotes);
-      _.set(newVote, `${id}-${category}.${localPlayer.id}`, vote);
+      _.set(newVote, `${id}.${category}.${localPlayer.id}`, vote);
       return newVote;
     });
 
-    if (id === localPlayer.id) {
-      setLocalPlayer((localPlayer) => {
-        return { ...localPlayer, points: 100 };
-      });
-    }
-
     socket.emit("userVotes", {
-      key: `${id}-${category}`,
+      key: `${id}.${category}`,
       voter: localPlayer.id,
       vote: vote,
     });
@@ -136,7 +129,7 @@ function Moderation(props) {
                     category={category}
                     gameData={gameData}
                     updateCat={updateCat}
-                    handleApprove={handleApprove}
+                    handleVote={handleVote}
                     isActive={isActive}
                     letter={letter}
                     wordVotes={wordVotes}
@@ -150,7 +143,7 @@ function Moderation(props) {
       {redirect && (
         <Redirect
           to={{
-            pathname: "/game",
+            pathname: "/results",
             push: true,
             state: {},
           }}
@@ -164,6 +157,7 @@ export function Category(props) {
   const tableStyle = { margin: "1rem 0" };
   const [allWords, setAllWords] = useState([]);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
+  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
 
   //@TODO: Fix this unique detection, is very ugly
   const isUnique = (word) => {
@@ -211,7 +205,7 @@ export function Category(props) {
         {_.map(props.gameData, (value) => {
           const votesByPlayerCat = _.get(
             props.wordVotes,
-            `${value.playerId}-${props.category}`,
+            `${value.playerId}.${props.category}`,
             {}
           );
           const word = _.get(value, `words.${props.category}`, "");
@@ -226,7 +220,8 @@ export function Category(props) {
             }
           });
           const points = yes > no ? (isUnique ? 1 : 0.5) : 0;
-          const enableVote = value.playerId === localPlayer.id ? false : true;
+          //const enableVote = value.playerId === localPlayer.id ? false : true;
+          const enableVote = true;
 
           return (
             <Player
@@ -241,7 +236,7 @@ export function Category(props) {
               yes={yes}
               no={no}
               points={points}
-              handleApprove={props.handleApprove}
+              handleVote={props.handleVote}
               enableVote={enableVote}
             />
           );
@@ -253,13 +248,52 @@ export function Category(props) {
 
 export function Player(props) {
   const [approved, setApproved] = useState();
+  const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
+  const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
 
-  const isValid = _.startsWith(props.word, props.letter);
+  //const isValid = _.startsWith(props.word, props.letter);
+  const isValid = true;
 
-  const handleApprove = (vote) => {
+  const handleVote = (vote) => {
     setApproved(vote);
-    props.handleApprove(props.id, props.category, vote);
+    props.handleVote(props.id, props.category, vote);
   };
+
+  useEffect(() => {
+    console.log("points updated LocalPlayer", localPlayer);
+  }, [localPlayer]);
+
+  useEffect(() => {
+    console.log("points updated remotePlayers", remotePlayers);
+  }, [remotePlayers]);
+
+  useEffect(() => {
+    if (props.id === localPlayer.id) {
+      setLocalPlayer((setLocalPlayer) => {
+        //const newPoints = setLocalPlayer.points + props.points;
+        const newLocalPlayer = _.cloneDeep(localPlayer);
+        _.set(
+          newLocalPlayer,
+          `points.${props.letter}.${props.category}`,
+          props.points
+        );
+        return newLocalPlayer;
+      });
+    } else {
+      setRemotePlayers((remotePlayers) => {
+        const newRemotePlayers = _.cloneDeep(remotePlayers);
+        const newPlayerIndex = _.findIndex(newRemotePlayers, (player) => {
+          return player.id === props.id;
+        });
+        _.set(
+          newRemotePlayers,
+          `points.${newPlayerIndex}.${props.letter}.${props.category}`,
+          props.points
+        );
+        return newRemotePlayers;
+      });
+    }
+  }, [props.points]);
 
   return (
     <tr>
@@ -286,7 +320,7 @@ export function Player(props) {
             type="radio"
             value={approved}
             name={`${props.id}-${props.category}`}
-            onChange={handleApprove}
+            onChange={handleVote}
           >
             <ToggleButton
               variant={approved === 1 ? "primary" : "secondary"}

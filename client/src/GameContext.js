@@ -8,6 +8,7 @@ export const GameProvider = (props) => {
     categories: [],
     rounds: 0,
     letters: [],
+    //letters: ["L", "V"],
     scores: {},
     currentRound: 0,
   };

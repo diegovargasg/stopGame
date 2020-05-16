@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
     const letters = _.get(data, "letters", []);
     const rounds = _.get(data, "rounds", 0);
     const ready = false;
-    const points = 0;
+    const points = {};
     const id = socket.id;
     //update list of players of that game id
     addUser({ id, gameId, name, ready, points });
