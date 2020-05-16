@@ -10,7 +10,7 @@ export const LocalPlayerProvider = (props) => {
     ready: "",
     points: {},
   };
-  /* const localPlayerDefault = {
+  /*const localPlayerDefault = {
     id: "1234567",
     gameId: "131",
     name: "Diego",
@@ -19,7 +19,7 @@ export const LocalPlayerProvider = (props) => {
       L: { Colors: 1, Brands: 1, Animals: 0 },
       V: { Colors: 0, Brands: 1, Animals: 0 },
     },
-  }; */
+  };*/
   const [localPlayer, setLocalPlayer] = useState(localPlayerDefault);
 
   return (

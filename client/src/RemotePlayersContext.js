@@ -3,7 +3,7 @@ import React, { useState, createContext } from "react";
 export const RemotePlayersContext = createContext();
 
 export const RemotePlayersProvider = (props) => {
-  /* const defaultRemote = [
+  const defaultRemote = [
     {
       id: "1234562",
       gameId: "131",
@@ -25,7 +25,7 @@ export const RemotePlayersProvider = (props) => {
       },
     },
   ];
-  const [remotePlayers, setRemotePlayers] = useState(defaultRemote); */
+  //const [remotePlayers, setRemotePlayers] = useState(defaultRemote);
   const [remotePlayers, setRemotePlayers] = useState([]);
 
   return (

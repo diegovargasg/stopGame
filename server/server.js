@@ -25,6 +25,13 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
+const getMainData = (socket) => {
+  const id = socket.id;
+  const user = getUser(id);
+  const gameId = _.get(user, "gameId", "");
+  return { id, user, gameId };
+};
+
 //Run when client connects
 io.on("connection", (socket) => {
   console.log(`user connected ${socket.id}`);
@@ -56,56 +63,59 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    const id = socket.id;
-    const user = getUser(id);
-    const gameId = _.get(user, "gameId", "");
-    console.log(`user disconneted ${id}`);
-    removeUser(id);
-    unReadyAllUsersByGameId(gameId);
+    const mainData = getMainData(socket);
+    removeUser(mainData.id);
+    unReadyAllUsersByGameId(mainData.gameId);
 
-    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+    io.to(mainData.gameId).emit(
+      "allUsers",
+      getAllUsersByGameId(mainData.gameId)
+    );
+    console.log(`user disconneted ${mainData.id}`);
   });
 
   //user is ready
   socket.on("userReady", (ready) => {
-    console.log("user is ready");
-    const id = socket.id;
-    const userReady = getUser(id);
-    const gameId = _.get(userReady, "gameId", "");
+    const mainData = getMainData(socket);
 
-    updateUserReady(id, ready);
+    updateUserReady(mainData.id, ready);
 
-    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+    io.to(mainData.gameId).emit(
+      "allUsers",
+      getAllUsersByGameId(mainData.gameId)
+    );
 
-    if (allUsersReady(gameId)) {
-      io.to(gameId).emit("startGame", true);
+    console.log(`user is ready ${mainData.id}`);
+    if (allUsersReady(mainData.gameId)) {
+      io.to(mainData.gameId).emit("startGame", true);
+      console.log("all users are ready");
     }
   });
 
   //User finished all words
   socket.on("userFinished", (data) => {
-    const id = socket.id;
-    const userReady = getUser(id);
-    const gameId = _.get(userReady, "gameId", "");
-    io.to(gameId).emit("gameEnded", id);
-    console.log("User finished the game", id);
+    const mainData = getMainData(socket);
+    io.to(mainData.gameId).emit("gameEnded", mainData.id);
+    console.log("User finished the game", mainData.id);
   });
 
   //Sent all the users answers
   socket.on("userWords", (data) => {
-    const id = socket.id;
-    const user = getUser(id);
-    const gameId = _.get(user, "gameId", "");
     console.log("send to the rest of users", data);
-    socket.broadcast.to(gameId).emit("otherUserWords", data);
+    const mainData = getMainData(socket);
+    socket.broadcast.to(mainData.gameId).emit("otherUserWords", data);
   });
 
   socket.on("userVotes", (data) => {
     console.log("votes", data);
-    const id = socket.id;
-    const user = getUser(id);
-    const gameId = _.get(user, "gameId", "");
-    socket.broadcast.to(gameId).emit("otherUserVoted", data);
+    const mainData = getMainData(socket);
+    socket.broadcast.to(mainData.gameId).emit("otherUserVoted", data);
+  });
+
+  socket.on("moderationEnded", (data) => {
+    console.log("moderation Finished");
+    const mainData = getMainData(socket);
+    io.to(mainData.gameId).emit("moderationEnded", data);
   });
 });
 

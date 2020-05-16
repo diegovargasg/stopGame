@@ -1,13 +1,19 @@
 import _ from "lodash";
+import { Redirect } from "react-router-dom";
 import React, { useState, useEffect, useContext } from "react";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import ProgressBar from "../../components/ProgressBar";
 
 function Results(props) {
   const [game, setGame] = useContext(GameContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
+  const [redirect, setRedirect] = useState(false);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [totalPointsByPlayer, setTotalPointsByPlayer] = useState([]);
   const [playedLetters, setPlayedLetters] = useState([]);
@@ -30,6 +36,10 @@ function Results(props) {
       singleLetterPoints[letter] = letterPoints[letter];
     });
     return { totalPoints: totalPoints, ...singleLetterPoints };
+  };
+
+  const handleContinue = () => {
+    setRedirect(true);
   };
 
   useEffect(() => {
@@ -71,7 +81,23 @@ function Results(props) {
 
   return (
     <React.Fragment>
-      <h5>Partial results</h5>
+      <Row>
+        <Col>
+          <h5>Partial results</h5>
+        </Col>
+        <Col>
+          <ProgressBar
+            variant="primary"
+            min={0}
+            max={10}
+            now={10}
+            updateRate={1000}
+            callBack={handleContinue}
+            striped
+          />
+        </Col>
+      </Row>
+
       <Table striped bordered style={tableStyle}>
         <thead>
           <tr>
@@ -96,6 +122,18 @@ function Results(props) {
           })}
         </tbody>
       </Table>
+      <Button variant="primary" size="lg" block>
+        Next round
+      </Button>
+      {redirect && (
+        <Redirect
+          to={{
+            pathname: "/game",
+            push: true,
+            state: {},
+          }}
+        />
+      )}
     </React.Fragment>
   );
 }

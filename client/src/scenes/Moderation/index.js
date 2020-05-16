@@ -32,11 +32,12 @@ function Moderation(props) {
       return;
     }
 
-    setLetter(game.letters[game.currentRound]);
+    const currentLetter = game.letters[game.currentRound];
+    setLetter(currentLetter);
 
     setGameData((gameData) => {
       const newGameData = _.cloneDeep(gameData);
-      _.set(newGameData, `${localPlayer.id}-${letter}`, {
+      _.set(newGameData, `${localPlayer.id}-${currentLetter}`, {
         playerId: localPlayer.id,
         name: localPlayer.name,
         words: localPlayerGameData.words,
@@ -53,7 +54,7 @@ function Moderation(props) {
     socket.on("otherUserWords", (otherUserData) => {
       setGameData((gameData) => {
         const newGameData = _.cloneDeep(gameData);
-        _.set(newGameData, `${otherUserData.playerId}-${letter}`, {
+        _.set(newGameData, `${otherUserData.playerId}-${currentLetter}`, {
           playerId: otherUserData.playerId,
           name: otherUserData.name,
           words: otherUserData.words,
@@ -65,9 +66,15 @@ function Moderation(props) {
     socket.on("otherUserVoted", (data) => {
       setWordVotes((wordVotes) => {
         const newVote = _.cloneDeep(wordVotes);
-        _.set(newVote, `${data.key}.${data.voter}`, data.vote);
+        _.set(newVote, `${data.id}.${data.category}.${data.voter}`, data.vote);
         return newVote;
       });
+    });
+
+    socket.on("moderationEnded", (data) => {
+      const currentRound = game.currentRound + 1;
+      setGame((game) => ({ ...game, currentRound: currentRound }));
+      setRedirect(data);
     });
   }, []);
 
@@ -83,7 +90,7 @@ function Moderation(props) {
 
     if (numVotesByCat >= minNumVotes) {
       console.log("all players voted", numVotesByCat, minNumVotes);
-      _.delay(updateCat, 1500);
+      _.delay(updateCat, 2000);
     }
   }, [wordVotes]);
 
@@ -92,9 +99,7 @@ function Moderation(props) {
       setActiveCat(activeCat + 1);
     } else {
       //Moderation finished
-      const currentRound = game.currentRound + 1;
-      setGame((game) => ({ ...game, currentRound: currentRound }));
-      setRedirect(true);
+      socket.emit("moderationEnded", true);
     }
   };
 
@@ -102,7 +107,6 @@ function Moderation(props) {
     if (socket === null) {
       return;
     }
-
     setWordVotes((wordVotes) => {
       const newVote = _.cloneDeep(wordVotes);
       _.set(newVote, `${id}.${category}.${localPlayer.id}`, vote);
@@ -110,9 +114,10 @@ function Moderation(props) {
     });
 
     socket.emit("userVotes", {
-      key: `${id}.${category}`,
+      id,
+      category,
       voter: localPlayer.id,
-      vote: vote,
+      vote,
     });
   };
 
@@ -228,7 +233,7 @@ export function Category(props) {
               no++;
             }
           });
-          const points = yes > no ? (isUnique ? 1 : 0.5) : 0;
+          const points = yes > no ? (unique ? 1 : 0.5) : 0;
           const enableVote = value.playerId === localPlayer.id ? false : true;
 
           return (
@@ -259,6 +264,7 @@ export function Player(props) {
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
 
+  //Should we implement any sor of validation for the words?
   //const isValid = _.startsWith(props.word, props.letter);
   const isValid = true;
 
@@ -286,7 +292,7 @@ export function Player(props) {
         });
         _.set(
           newRemotePlayers,
-          `points.${newPlayerIndex}.${props.letter}.${props.category}`,
+          `${newPlayerIndex}.points.${props.letter}.${props.category}`,
           props.points
         );
         return newRemotePlayers;

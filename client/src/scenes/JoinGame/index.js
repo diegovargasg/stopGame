@@ -39,7 +39,7 @@ function JoinGame() {
             required
             minLength="2"
             maxLength="15"
-            value="Camilo"
+            value={name}
             onChange={(event) => setName(event.target.value)}
           />
         </Form.Group>
