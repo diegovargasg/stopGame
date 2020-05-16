@@ -9,12 +9,13 @@ const {
   addUser,
   removeUser,
   getAllUsersByGameId,
+  removeAllUsersByGameId,
   updateUserReady,
   allUsersReady,
   unReadyAllUsersByGameId,
 } = require("./utils/users");
 
-const { addGame, getGameDataById } = require("./utils/game");
+const { addGame, getGameDataById, removeGameById } = require("./utils/games");
 
 const app = express();
 const server = http.createServer(app);
@@ -38,7 +39,7 @@ io.on("connection", (socket) => {
   //User has joined a game
   socket.on("joinGame", (data) => {
     const gameId = _.get(data, "id", "");
-    const name = _.get(data, "name", "");
+    const name = _.capitalize(_.get(data, "name", ""));
     const categories = _.get(data, "categories", []);
     const letters = _.get(data, "letters", []);
     const rounds = _.get(data, "rounds", 0);
@@ -62,6 +63,12 @@ io.on("connection", (socket) => {
     io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
   });
 
+  socket.on("cleanGame", (gameId) => {
+    removeAllUsersByGameId(gameId);
+    removeGameById(gameId);
+  });
+
+  //@TODO: stop the game when everyone left
   socket.on("disconnect", () => {
     const mainData = getMainData(socket);
     removeUser(mainData.id);
@@ -72,6 +79,12 @@ io.on("connection", (socket) => {
       getAllUsersByGameId(mainData.gameId)
     );
     console.log(`user disconneted ${mainData.id}`);
+
+    //All the users left, clean up the gameId and users
+    if (_.size(getAllUsersByGameId(mainData.gameId)) <= 1) {
+      removeAllUsersByGameId(mainData.gameId);
+      removeGameById(mainData.gameId);
+    }
   });
 
   //user is ready
@@ -116,6 +129,12 @@ io.on("connection", (socket) => {
     console.log("moderation Finished");
     const mainData = getMainData(socket);
     io.to(mainData.gameId).emit("moderationEnded", data);
+  });
+
+  socket.on("resultsContinue", (data) => {
+    console.log("results ended");
+    const mainData = getMainData(socket);
+    io.to(mainData.gameId).emit("resultsContinue", data);
   });
 });
 

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
@@ -45,7 +45,7 @@ function CreateGame() {
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
-    if (form.checkValidity() === false /*|| categories.length < 5*/) {
+    if (form.checkValidity() === false || categories.length < 5) {
       event.preventDefault();
       event.stopPropagation();
       setCatAlert(true);

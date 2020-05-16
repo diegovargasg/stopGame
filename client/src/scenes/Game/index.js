@@ -15,6 +15,7 @@ function Game(props) {
   const letterBadge = useRef(null);
 
   const [letter, setLetter] = useState("");
+  const [finalLetter, setFinalLetter] = useState("");
   const [gameStarted, setGameStarted] = useState(false);
   const [showBegin, setShowBegin] = useState(false);
   const [words, setWords] = useState({});
@@ -45,7 +46,7 @@ function Game(props) {
     });
 
     setWords(tmpCat);
-    console.log(game.currentRound, game.letters);
+    setFinalLetter(game.letters[game.currentRound]);
   }, []);
 
   const randomLetterEnded = () => {
@@ -76,14 +77,16 @@ function Game(props) {
     <React.Fragment>
       <h5>
         Words that begin with the letter{" "}
-        <span className="h3" ref={letterBadge}>
-          <RandomLetter
-            counter={10}
-            speed={250}
-            callBack={randomLetterEnded}
-            finalLetter={game.letters[game.currentRound]}
-          />
-        </span>
+        {finalLetter && (
+          <span className="h3" ref={letterBadge}>
+            <RandomLetter
+              counter={10}
+              speed={250}
+              callBack={randomLetterEnded}
+              finalLetter={finalLetter}
+            />
+          </span>
+        )}
         <Overlay
           target={letterBadge.current}
           show={showBegin}

@@ -5,6 +5,7 @@ const allUsers = [];
 
 function addUser({ id, gameId, name, ready, points }) {
   allUsers.push({ id, gameId, name, ready, points });
+  console.log("AllUsers", allUsers);
 }
 
 function getUser(id) {
@@ -19,10 +20,18 @@ function getAllUsersByGameId(gameId) {
   });
 }
 
-function removeUser(id) {
+function removeAllUsersByGameId(gameId) {
   return _.remove(allUsers, (user) => {
+    return user.gameId === gameId;
+  });
+}
+
+function removeUser(id) {
+  console.log("Before cleaned", allUsers);
+  _.remove(allUsers, (user) => {
     return user.id === id;
   });
+  console.log("After Cleaned", allUsers);
 }
 
 function updateUserReady(id, ready) {
@@ -53,6 +62,7 @@ function unReadyAllUsersByGameId(gameId) {
 
 module.exports = {
   getAllUsersByGameId,
+  removeAllUsersByGameId,
   getUser,
   addUser,
   removeUser,

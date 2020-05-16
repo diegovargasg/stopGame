@@ -1,9 +1,10 @@
 import React, { useState, createContext } from "react";
+import Constants from "./constants";
 
 export const RemotePlayersContext = createContext();
 
 export const RemotePlayersProvider = (props) => {
-  const defaultRemote = [
+  /* const defaultRemote = [
     {
       id: "1234562",
       gameId: "131",
@@ -24,9 +25,11 @@ export const RemotePlayersProvider = (props) => {
         V: { Colors: 0, Brands: 0, Animals: 0 },
       },
     },
-  ];
+  ]; */
   //const [remotePlayers, setRemotePlayers] = useState(defaultRemote);
-  const [remotePlayers, setRemotePlayers] = useState([]);
+  const [remotePlayers, setRemotePlayers] = useState(
+    Constants.remotePlayersDefault
+  );
 
   return (
     <RemotePlayersContext.Provider value={[remotePlayers, setRemotePlayers]}>

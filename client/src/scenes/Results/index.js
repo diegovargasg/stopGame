@@ -3,6 +3,7 @@ import { Redirect } from "react-router-dom";
 import React, { useState, useEffect, useContext } from "react";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
+import { SocketContext } from "../../SocketContext";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
@@ -13,10 +14,14 @@ import ProgressBar from "../../components/ProgressBar";
 function Results(props) {
   const [game, setGame] = useContext(GameContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
+  const [socket, setSocket] = useContext(SocketContext);
   const [redirect, setRedirect] = useState(false);
+  const [disableBtnContinue, setDisableBtnContinue] = useState(false);
+  const [playersContinue, setPlayersContinue] = useState({});
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [totalPointsByPlayer, setTotalPointsByPlayer] = useState([]);
   const [playedLetters, setPlayedLetters] = useState([]);
+  const [gameEnded, setGameEnded] = useState(false);
   const tableStyle = { margin: "1rem 0" };
 
   const getLetterPoints = (letter, points) => {
@@ -39,14 +44,37 @@ function Results(props) {
   };
 
   const handleContinue = () => {
-    setRedirect(true);
+    setDisableBtnContinue(true);
+    socket.emit("resultsContinue", { id: localPlayer.id });
   };
 
   useEffect(() => {
-    if (localPlayer.id === "") {
+    //if more than half of the players have pressed continue
+    if (_.size(playersContinue) / (_.size(remotePlayers) + 1) > 0.5) {
+      setRedirect(true);
+    }
+  }, [playersContinue]);
+
+  useEffect(() => {
+    if (socket === null || localPlayer.id === "") {
       props.history.push("/");
       return;
     }
+
+    //Game Ended
+    if (game.currentRound >= game.rounds) {
+      socket.emit("cleanGame", game.id);
+      socket.close();
+      setGameEnded(true);
+    }
+
+    socket.on("resultsContinue", (data) => {
+      setPlayersContinue((playersContinue) => {
+        const newPlayersContinue = _.cloneDeep(playersContinue);
+        _.set(newPlayersContinue, `${data.id}`, true);
+        return newPlayersContinue;
+      });
+    });
 
     const localPlayerPoints = [
       {
@@ -83,19 +111,21 @@ function Results(props) {
     <React.Fragment>
       <Row>
         <Col>
-          <h5>Partial results</h5>
+          <h5>{gameEnded ? "Final" : "Partial"} results</h5>
         </Col>
-        <Col>
-          <ProgressBar
-            variant="primary"
-            min={0}
-            max={10}
-            now={10}
-            updateRate={1000}
-            callBack={handleContinue}
-            striped
-          />
-        </Col>
+        {!gameEnded && (
+          <Col>
+            <ProgressBar
+              variant="primary"
+              min={0}
+              max={10}
+              now={10}
+              updateRate={1000}
+              callBack={handleContinue}
+              striped
+            />
+          </Col>
+        )}
       </Row>
 
       <Table striped bordered style={tableStyle}>
@@ -122,15 +152,36 @@ function Results(props) {
           })}
         </tbody>
       </Table>
-      <Button variant="primary" size="lg" block>
-        Next round
-      </Button>
+      {gameEnded && (
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          onClick={() => {
+            props.history.push("/");
+          }}
+        >
+          Home
+        </Button>
+      )}
+
+      {!gameEnded && (
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          onClick={handleContinue}
+          disabled={disableBtnContinue}
+        >
+          Continue
+        </Button>
+      )}
+
       {redirect && (
         <Redirect
           to={{
             pathname: "/game",
             push: true,
-            state: {},
           }}
         />
       )}
