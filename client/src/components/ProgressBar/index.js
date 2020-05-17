@@ -3,6 +3,7 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 
 export default (props) => {
   const [now, setNow] = useState(props.max);
+  const styleBar = { "min-width": "2rem" };
 
   useEffect(() => {
     if (now > 0) {
@@ -20,6 +21,7 @@ export default (props) => {
       min={props.min}
       max={props.max}
       now={now}
+      style={styleBar}
       striped
     />
   );

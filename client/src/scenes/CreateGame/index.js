@@ -11,7 +11,7 @@ import { LocalPlayerContext } from "../../LocalPlayerContext";
 function CreateGame() {
   const [game, setGame] = useContext(GameContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
-  const [rounds, setRounds] = useState(5);
+  const [rounds, setRounds] = useState(3);
   const [categories, setCategories] = useState([]);
   const [redirect, setRedirect] = useState(false);
   const [name, setName] = useState("");

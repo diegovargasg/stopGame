@@ -12,6 +12,7 @@ import ProgressBar from "../../components/ProgressBar";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
+import Tooltip from "react-bootstrap/Tooltip";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
@@ -220,13 +221,19 @@ export function Category(props) {
         </tr>
       </thead>
       <tbody>
-        {_.map(props.gameData, (value) => {
+        {_.map(props.gameData, (value, key) => {
+          const word = _.get(value, `words.${props.category}`, "");
+
+          if (_.isEmpty(word)) {
+            return <PlayerEmpty key={value.playerId} name={value.name} />;
+          }
+
           const votesByPlayerCat = _.get(
             props.wordVotes,
             `${value.playerId}.${props.category}`,
             {}
           );
-          const word = _.get(value, `words.${props.category}`, "");
+
           const unique = isUnique(word);
           let yes = 0;
           let no = 0;
@@ -350,6 +357,17 @@ export function Player(props) {
           </ToggleButtonGroup>
         )}
       </td>
+    </tr>
+  );
+}
+
+export function PlayerEmpty(props) {
+  return (
+    <tr>
+      <td>{props.name}</td>
+      <td align="center">-</td>
+      <td align="center">0</td>
+      <td></td>
     </tr>
   );
 }
