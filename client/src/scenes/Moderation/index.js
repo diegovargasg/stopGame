@@ -214,7 +214,7 @@ export function Category(props) {
   }, [props.gameData]);
 
   return (
-    <Table responsive striped bordered style={tableStyle} size="sm">
+    <Table striped bordered style={tableStyle} size="sm">
       <thead>
         <tr>
           <th>Player</th>

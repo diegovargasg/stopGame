@@ -9,6 +9,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Alert from "react-bootstrap/Alert";
 import ProgressBar from "../../components/ProgressBar";
 
 function Results(props) {
@@ -22,6 +23,8 @@ function Results(props) {
   const [totalPointsByPlayer, setTotalPointsByPlayer] = useState([]);
   const [playedLetters, setPlayedLetters] = useState([]);
   const [gameEnded, setGameEnded] = useState(false);
+  const [winnerName, setWinnerName] = useState("");
+  const alertStyle = { "text-align": "center" };
   const tableStyle = { margin: "1rem 0" };
 
   const getLetterPoints = (letter, points) => {
@@ -152,6 +155,13 @@ function Results(props) {
           })}
         </tbody>
       </Table>
+      {gameEnded && (
+        <Alert style={alertStyle} variant="success">
+          <Alert.Heading>
+            {_.get(_.first(totalPointsByPlayer), "name")} wins!
+          </Alert.Heading>
+        </Alert>
+      )}
       {gameEnded && (
         <Button
           variant="primary"
