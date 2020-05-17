@@ -80,7 +80,7 @@ function CreateGame() {
           type="text"
           required
           minLength="2"
-          maxLength="15"
+          maxLength="10"
           onChange={(event) => setName(event.target.value)}
           autoComplete="off"
           value={name}

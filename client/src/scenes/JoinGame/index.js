@@ -38,7 +38,7 @@ function JoinGame() {
             type="text"
             required
             minLength="2"
-            maxLength="15"
+            maxLength="10"
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
