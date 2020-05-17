@@ -10,6 +10,8 @@ import ProgressBar from "../../components/ProgressBar";
 import RandomLetter from "../../components/RandomLetter";
 import { SocketContext } from "../../SocketContext";
 import { GameContext } from "../../GameContext";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 function Game(props) {
   const letterBadge = useRef(null);
@@ -98,18 +100,22 @@ function Game(props) {
         <thead>
           <tr>
             <th>Category</th>
-            <th>Word</th>
             <th>
-              {gameStarted && (
-                <ProgressBar
-                  variant="primary"
-                  min="0"
-                  max="30"
-                  updateRate={1000}
-                  callBack={stopProgressBar}
-                  striped
-                />
-              )}
+              <Row>
+                <Col>Word</Col>
+                <Col>
+                  {gameStarted && (
+                    <ProgressBar
+                      variant="primary"
+                      min="0"
+                      max="30"
+                      updateRate={1000}
+                      callBack={stopProgressBar}
+                      striped
+                    />
+                  )}
+                </Col>
+              </Row>
             </th>
           </tr>
         </thead>
@@ -157,24 +163,14 @@ export function Category(props) {
   const [disabled, setDisabled] = useState(true);
   const input = useRef(null);
 
-  useEffect(() => {
-    //@TODO: when is this executing? which state?
-    if (!disabled) {
-      input.current.focus();
-    }
-  });
-
-  const handleClick = () => {
+  const handleChange = () => {
     const word = _.upperFirst(
       _.truncate(_.trim(_.escape(input.current.value)), {
         length: 24,
       })
     );
     //stores the word
-    if (!disabled && word !== "") {
-      props.onAdd(props.name, word);
-    }
-    setDisabled(!disabled);
+    props.onAdd(props.name, word);
   };
 
   return (
@@ -183,19 +179,10 @@ export function Category(props) {
       <td>
         <Form.Control
           type="text"
-          disabled={disabled}
           ref={input}
           maxLength={24}
+          onChange={handleChange}
         />
-      </td>
-      <td align="right">
-        <Button
-          disabled={props.gameEnded || props.gameStarted === false}
-          variant={disabled ? "primary" : "success"}
-          onClick={handleClick}
-        >
-          {disabled ? "add" : "save"}
-        </Button>
       </td>
     </tr>
   );

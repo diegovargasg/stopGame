@@ -40,6 +40,7 @@ function JoinGame() {
             minLength="2"
             maxLength="10"
             value={name}
+            autoComplete="off"
             onChange={(event) => setName(event.target.value)}
           />
         </Form.Group>

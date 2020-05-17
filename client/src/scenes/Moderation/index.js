@@ -309,7 +309,7 @@ export function Player(props) {
       <td>{props.name}</td>
       <td>
         <span>
-          {_.isEmpty(props.word) ? "--" : props.word}{" "}
+          {_.isEmpty(props.word) ? "-" : _.unescape(props.word)}{" "}
           {props.yes > 0 && (
             <Badge pill variant="success">
               {props.yes}
