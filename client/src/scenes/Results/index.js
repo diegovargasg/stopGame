@@ -131,7 +131,7 @@ function Results(props) {
       <Table striped bordered style={tableStyle} size="sm">
         <thead>
           <tr>
-            <th>Names</th>
+            <th>Player</th>
             {_.map(playedLetters, (letter) => {
               return <th key={letter}>{letter}</th>;
             })}

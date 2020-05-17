@@ -98,11 +98,11 @@ function Waiting(props) {
     socket.emit("userReady", !_.get(localPlayer, "ready", false));
   };
 
-  const styleUl = { margin: "1rem 0" };
+  const styleUl = { margin: "1.5rem 0" };
   return (
     <React.Fragment>
       <h5>Waiting for other players...</h5>
-      <Alert variant="primary">
+      <Alert variant="primary" style={styleUl}>
         <p>
           <b>Game ID: </b>
           {game.id}
@@ -160,7 +160,7 @@ function Waiting(props) {
             size="lg"
             block
             onClick={handleReady}
-            disabled={remotePlayers.length > 0 ? false : false}
+            disabled={remotePlayers.length > 0 ? false : true}
           >
             {!_.get(localPlayer, "ready", false) ? `Ready` : `Not ready`}
           </Button>

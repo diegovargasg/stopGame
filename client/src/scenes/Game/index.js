@@ -74,12 +74,14 @@ function Game(props) {
     socket.emit("userFinished", true);
   };
 
+  const tableStyle = { "margin-top": "1.5rem" };
+
   return (
     <React.Fragment>
       <h5>
-        Words that begin with the letter{" "}
+        Words beginning with{" "}
         {finalLetter && (
-          <span className="h3" ref={letterBadge}>
+          <span className="h4" ref={letterBadge}>
             <RandomLetter
               counter={10}
               speed={250}
@@ -88,7 +90,11 @@ function Game(props) {
             />
           </span>
         )}
-        <Overlay target={letterBadge.current} show={showBegin} placement="left">
+        <Overlay
+          target={letterBadge.current}
+          show={showBegin}
+          placement="right"
+        >
           {(props) => (
             <Tooltip id="overlay-example" {...props}>
               Play!
@@ -96,7 +102,7 @@ function Game(props) {
           )}
         </Overlay>
       </h5>
-      <Table striped bordered size="sm">
+      <Table style={tableStyle} striped bordered size="sm">
         <thead>
           <tr>
             <th>Category</th>

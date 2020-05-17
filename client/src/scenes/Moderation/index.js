@@ -8,11 +8,11 @@ import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
+import Alert from "react-bootstrap/Alert";
 import ProgressBar from "../../components/ProgressBar";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
-import Tooltip from "react-bootstrap/Tooltip";
 
 function Moderation(props) {
   const [game, setGame] = useContext(GameContext);
@@ -125,12 +125,14 @@ function Moderation(props) {
   };
 
   const styleCardBody = { padding: 0 };
+  const infoStyle = { "font-size": "0.8rem" };
+  const categoryStyle = { "margin-bottom": 0 };
 
   return (
     <React.Fragment>
       <h5>
         Moderation for the letter{" "}
-        <span className="h3">
+        <span className="h4">
           <Badge variant="primary">{letter}</Badge>
         </span>
       </h5>
@@ -140,7 +142,7 @@ function Moderation(props) {
           return (
             <Card key={index}>
               <Card.Header>
-                <h5>{category}</h5>
+                <h6 style={categoryStyle}>{category}</h6>
               </Card.Header>
               <Accordion.Collapse eventKey={index} className="container-fluid">
                 <Card.Body style={styleCardBody}>
@@ -159,6 +161,19 @@ function Moderation(props) {
           );
         })}
       </Accordion>
+      <hr />
+      <Alert variant="info" style={infoStyle}>
+        Approve or disapprove other players words with:
+        <br />
+        <ToggleButtonGroup type="radio" name="example">
+          <ToggleButton variant="light" value="" size="sm">
+            Yes
+          </ToggleButton>
+          <ToggleButton variant="light" value="" size="sm">
+            No
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Alert>
       {redirect && (
         <Redirect
           to={{
@@ -173,7 +188,7 @@ function Moderation(props) {
 }
 
 export function Category(props) {
-  const tableStyle = { margin: "1rem 0" };
+  const tableStyle = { margin: "1.5rem 0" };
   const [allWords, setAllWords] = useState([]);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
@@ -221,7 +236,7 @@ export function Category(props) {
         </tr>
       </thead>
       <tbody>
-        {_.map(props.gameData, (value, key) => {
+        {_.map(props.gameData, (value) => {
           const word = _.get(value, `words.${props.category}`, "");
 
           if (_.isEmpty(word)) {
