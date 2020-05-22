@@ -6,7 +6,7 @@
 
 "Stop the game" is a small Reactjs io game to play in real time with two or more people.
 
-  - Write as many words, from a category that begin by a specified letter. 
+  - Write as many words, from a category, that begins by a specified letter. 
   - approve/disapprove your opponents words.
   - Get points for each correct word you input.
 
