@@ -71,6 +71,7 @@ function CreateGame() {
     setRedirect(true);
   };
   const alertStyle = { "margin-top": "1rem" };
+  const toggleButtonGroupStyle = { display: "flex" };
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -86,12 +87,13 @@ function CreateGame() {
           value={name}
         />
       </Form.Group>
-      <Form.Group className="col">
+      <Form.Group className="container-fluid">
         <Form.Label className="row">Select your categories:</Form.Label>
         <ToggleButtonGroup
           className="row"
           type="checkbox"
           value={categories}
+          style={toggleButtonGroupStyle}
           onChange={(val) => {
             setCategories(val);
           }}
@@ -112,6 +114,7 @@ function CreateGame() {
             );
           })}
         </ToggleButtonGroup>
+
         {catAlert && (
           <Alert className="row" variant="danger" style={alertStyle}>
             Please select 5 categories
