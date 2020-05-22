@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { useState, useEffect, useContext, PureComponent } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Redirect } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import Table from "react-bootstrap/Table";

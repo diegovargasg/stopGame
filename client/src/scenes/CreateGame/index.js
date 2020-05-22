@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
@@ -7,6 +7,7 @@ import Alert from "react-bootstrap/Alert";
 import { Redirect } from "react-router-dom";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
+import { getRandomLetters } from "../../utils";
 
 function CreateGame() {
   const [game, setGame] = useContext(GameContext);
@@ -30,18 +31,6 @@ function CreateGame() {
     "Sports",
     "Movies",
   ];
-
-  //@TODO: move this and the one from RANDOMLETTER to standalone function in utils
-  const getRandomLetters = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    let lettersSet = new Set();
-
-    while (lettersSet.size < rounds) {
-      const char = chars.charAt(Math.floor(Math.random() * chars.length));
-      lettersSet.add(char);
-    }
-    return Array.from(lettersSet);
-  };
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;

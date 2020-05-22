@@ -19,10 +19,6 @@ function Waiting(props) {
   const [socket, setSocket] = useContext(SocketContext);
   const [game, setGame] = useContext(GameContext);
 
-  //@TODO move this to config
-  //const ENDPOINT = "http://localhost:9000/";
-  //const ENDPOINT = "http://192.168.0.47:9000/";
-
   //First and only time in which everything is ready, we set and begin the connection with the server
   useEffect(() => {
     if (game.id === "") {

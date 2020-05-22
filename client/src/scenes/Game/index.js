@@ -41,13 +41,12 @@ function Game(props) {
       setGameEnded(data);
     });
 
-    //@TODO refator this
-    const tmpCat = {};
+    const defaultCat = {};
     game.categories.map((category) => {
-      tmpCat[category] = "";
+      _.set(defaultCat, `${category}`, "");
     });
 
-    setWords(tmpCat);
+    setWords(defaultCat);
     setFinalLetter(game.letters[game.currentRound]);
   }, []);
 
@@ -166,7 +165,6 @@ function Game(props) {
 }
 
 export function Category(props) {
-  const [disabled, setDisabled] = useState(true);
   const input = useRef(null);
 
   const handleChange = () => {
