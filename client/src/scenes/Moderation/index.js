@@ -242,11 +242,6 @@ export function Category(props) {
           let no = 0;
           _.forEach(votesByPlayerCat, (vote) => {
             vote ? yes++ : no++;
-            /* if (vote) {
-              yes++;
-            } else {
-              no++;
-            } */
           });
           const points = yes > no ? (unique ? 1 : 0.5) : 0;
           const enableVote = value.playerId === localPlayer.id ? false : true;
