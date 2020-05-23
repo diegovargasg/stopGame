@@ -43,7 +43,7 @@ function CreateGame() {
     setCatAlert(false);
 
     const gameId = Math.random().toString(36).substr(2, 6);
-    const letters = getRandomLetters();
+    const letters = getRandomLetters(rounds);
     setGame((game) => {
       return {
         ...game,

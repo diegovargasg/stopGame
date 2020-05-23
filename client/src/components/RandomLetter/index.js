@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Badge from "react-bootstrap/Badge";
-import { getRandomLetters } from "../../utils";
+import { getRandomLetter } from "../../utils";
 
 export default (props) => {
   const [counter, setCounter] = useState(props.counter);
@@ -10,7 +10,7 @@ export default (props) => {
   useEffect(() => {
     if (counter > 0) {
       setTimeout(() => {
-        setLetter(getRandomLetters());
+        setLetter(getRandomLetter());
         setCounter(counter - 1);
       }, props.speed);
     } else {
