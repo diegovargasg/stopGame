@@ -9,6 +9,7 @@ import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import Alert from "react-bootstrap/Alert";
+import Form from "react-bootstrap/Form";
 import ProgressBar from "../../components/ProgressBar";
 import { RemotePlayersContext } from "../../RemotePlayersContext";
 import { GameContext } from "../../GameContext";
@@ -161,19 +162,6 @@ function Moderation(props) {
           );
         })}
       </Accordion>
-      <hr />
-      <Alert variant="info" style={infoStyle}>
-        Approve or disapprove other players words with:
-        <br />
-        <ToggleButtonGroup type="radio" name="example">
-          <ToggleButton variant="light" value="" size="sm">
-            Yes
-          </ToggleButton>
-          <ToggleButton variant="light" value="" size="sm">
-            No
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Alert>
       {redirect && (
         <Redirect
           to={{
@@ -253,11 +241,12 @@ export function Category(props) {
           let yes = 0;
           let no = 0;
           _.forEach(votesByPlayerCat, (vote) => {
-            if (vote === 1) {
+            vote ? yes++ : no++;
+            /* if (vote) {
               yes++;
-            } else if (vote === -1) {
+            } else {
               no++;
-            }
+            } */
           });
           const points = yes > no ? (unique ? 1 : 0.5) : 0;
           const enableVote = value.playerId === localPlayer.id ? false : true;
@@ -286,7 +275,7 @@ export function Category(props) {
 }
 
 export function Player(props) {
-  const [approved, setApproved] = useState();
+  const [approved, setApproved] = useState(false);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
 
@@ -295,8 +284,8 @@ export function Player(props) {
   const isValid = true;
 
   const handleVote = (vote) => {
-    setApproved(vote);
-    props.handleVote(props.id, props.category, vote);
+    setApproved(vote.currentTarget.checked);
+    props.handleVote(props.id, props.category, vote.currentTarget.checked);
   };
 
   useEffect(() => {
@@ -347,29 +336,16 @@ export function Player(props) {
       <td align="center">{props.points}</td>
       <td align="center">
         {props.enableVote && (
-          <ToggleButtonGroup
-            type="radio"
-            value={approved}
-            name={`${props.id}-${props.category}`}
-            onChange={handleVote}
-          >
-            <ToggleButton
-              variant={approved === 1 ? "primary" : "secondary"}
-              value={1}
-              disabled={!isValid}
-              size="sm"
-            >
-              Yes
-            </ToggleButton>
-            <ToggleButton
-              variant={approved === -1 ? "primary" : "secondary"}
-              value={-1}
-              disabled={!isValid}
-              size="sm"
-            >
-              No
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <Form>
+            <Form.Check
+              type="switch"
+              id={`${props.id}-${props.category}`}
+              onChange={handleVote}
+              checked={approved}
+              label="Accept"
+              inline
+            />
+          </Form>
         )}
       </td>
     </tr>
