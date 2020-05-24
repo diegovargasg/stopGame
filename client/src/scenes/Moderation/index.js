@@ -281,10 +281,6 @@ export function Player(props) {
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
 
-  //Should we implement any sor of validation for the words?
-  //const isValid = _.startsWith(props.word, props.letter);
-  const isValid = true;
-
   const handleVote = (vote) => {
     setApproved(vote.currentTarget.checked);
     props.handleVote(props.id, props.category, vote.currentTarget.checked);
@@ -341,7 +337,7 @@ export function Player(props) {
       </td>
       <td align="center">{props.points}</td>
       <td align="center">
-        {!props.enableVote && (
+        {props.enableVote && (
           <Form>
             <Form.Check
               type="switch"
