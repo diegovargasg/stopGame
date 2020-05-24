@@ -7,12 +7,16 @@ export default (props) => {
 
   useEffect(() => {
     if (now > 0) {
-      setTimeout(() => {
+      var idTimeout = setTimeout(() => {
         setNow(now - 1);
       }, props.updateRate);
     } else {
       props.callBack();
     }
+
+    return () => {
+      clearTimeout(idTimeout);
+    };
   }, [now]);
 
   return (
