@@ -18,7 +18,7 @@ function Moderation(props) {
   const [socket, setSocket] = useContext(SocketContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
   const [remotePlayers, setRemotePlayers] = useContext(RemotePlayersContext);
-  const [letter, setLetter] = useState();
+  const [letter, setLetter] = useState("");
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
   const [wordVotes, setWordVotes] = useState({});

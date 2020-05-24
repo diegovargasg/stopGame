@@ -23,7 +23,6 @@ function Results(props) {
   const [totalPointsByPlayer, setTotalPointsByPlayer] = useState([]);
   const [playedLetters, setPlayedLetters] = useState([]);
   const [gameEnded, setGameEnded] = useState(false);
-  const [winnerName, setWinnerName] = useState("");
   const alertStyle = { "text-align": "center" };
   const tableStyle = { margin: "1rem 0" };
 
