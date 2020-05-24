@@ -27,22 +27,22 @@ function Moderation(props) {
   const localPlayerGameData = _.get(props, "location.state.gameData", {});
 
   useEffect(() => {
-    socket.emit("userWords", {
-      playerId: localPlayer.id,
-      name: localPlayer.name,
-      words: localPlayerGameData.words,
-    });
-  }, [gameData]);
-
-  useEffect(() => {
     if (socket === null || game.id === "") {
       props.history.push("/");
       return;
     }
 
+    //sends to the rest of users localPlayer GameData
+    socket.emit("userWords", {
+      playerId: localPlayer.id,
+      name: localPlayer.name,
+      words: localPlayerGameData.words,
+    });
+
     const currentLetter = game.letters[game.currentRound];
     setLetter(currentLetter);
 
+    //Sets localPlayer GameData
     setGameData((gameData) => {
       const newGameData = _.cloneDeep(gameData);
       _.set(newGameData, `${localPlayer.id}-${currentLetter}`, {
