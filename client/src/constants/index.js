@@ -15,4 +15,18 @@ module.exports = {
     scores: {},
     currentRound: 0,
   },
+  categoriesNames: [
+    "Names",
+    "Animals",
+    "Countries",
+    "Food",
+    "Brands",
+    "Professions",
+    "Objects",
+    "Colors",
+    "Cities",
+    "Songs",
+    "Sports",
+    "Movies",
+  ],
 };

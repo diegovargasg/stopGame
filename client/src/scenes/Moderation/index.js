@@ -4,8 +4,6 @@ import { Redirect } from "react-router-dom";
 import { SocketContext } from "../../SocketContext";
 import Table from "react-bootstrap/Table";
 import Accordion from "react-bootstrap/Accordion";
-import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
-import ToggleButton from "react-bootstrap/ToggleButton";
 import Card from "react-bootstrap/Card";
 import Badge from "react-bootstrap/Badge";
 import Alert from "react-bootstrap/Alert";
@@ -126,7 +124,6 @@ function Moderation(props) {
   };
 
   const styleCardBody = { padding: 0 };
-  const infoStyle = { "font-size": "0.8rem" };
   const categoryStyle = { "margin-bottom": 0 };
 
   return (
@@ -162,6 +159,16 @@ function Moderation(props) {
           );
         })}
       </Accordion>
+      <hr />
+      <Alert variant="light">
+        <p>
+          <span className="alert__uniqueWord">1 point for unique word </span>
+          <br />
+          <span className="alert__duplicatedWord">
+            0.5 points for duplicated word
+          </span>{" "}
+        </p>
+      </Alert>
       {redirect && (
         <Redirect
           to={{
@@ -313,9 +320,13 @@ export function Player(props) {
   return (
     <tr>
       <td>{props.name}</td>
-      <td>
+      <td className="word">
         <span>
-          {_.isEmpty(props.word) ? "-" : _.unescape(props.word)}{" "}
+          <span
+            className={props.isUnique ? "word__unique" : "word__duplicated"}
+          >
+            {_.isEmpty(props.word) ? "-" : _.unescape(props.word)}{" "}
+          </span>
           {props.yes > 0 && (
             <Badge pill variant="success">
               {props.yes}
@@ -330,7 +341,7 @@ export function Player(props) {
       </td>
       <td align="center">{props.points}</td>
       <td align="center">
-        {props.enableVote && (
+        {!props.enableVote && (
           <Form>
             <Form.Check
               type="switch"

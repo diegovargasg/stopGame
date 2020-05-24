@@ -8,6 +8,7 @@ import { Redirect } from "react-router-dom";
 import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
 import { getRandomLetters } from "../../utils";
+import Constants from "../../constants";
 
 function CreateGame() {
   const [game, setGame] = useContext(GameContext);
@@ -17,20 +18,6 @@ function CreateGame() {
   const [redirect, setRedirect] = useState(false);
   const [name, setName] = useState("");
   const [catAlert, setCatAlert] = useState(false);
-  const categoriesNames = [
-    "Names",
-    "Animals",
-    "Countries",
-    "Food",
-    "Brands",
-    "Professions",
-    "Objects",
-    "Colors",
-    "Cities",
-    "Songs",
-    "Sports",
-    "Movies",
-  ];
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
@@ -87,7 +74,7 @@ function CreateGame() {
             setCategories(val);
           }}
         >
-          {categoriesNames.map((category) => {
+          {Constants.categoriesNames.map((category) => {
             return (
               <ToggleButton
                 key={category}
