@@ -78,7 +78,7 @@ function Game(props) {
     socket.emit("userFinished", true);
   };
 
-  const tableStyle = { "margin-top": "1.5rem" };
+  const tableStyle = { marginTop: "1.5rem" };
 
   return (
     <React.Fragment>

@@ -130,7 +130,7 @@ function Moderation(props) {
   };
 
   const styleCardBody = { padding: 0 };
-  const categoryStyle = { "margin-bottom": 0 };
+  const categoryStyle = { marginBottom: 0 };
 
   return (
     <React.Fragment>
