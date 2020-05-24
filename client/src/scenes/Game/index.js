@@ -48,6 +48,11 @@ function Game(props) {
 
     setWords(defaultCat);
     setFinalLetter(game.letters[game.currentRound]);
+
+    return () => {
+      //onUnmount do clean-up events here
+      socket.off("gameEnded");
+    };
   }, []);
 
   const randomLetterEnded = () => {

@@ -78,6 +78,13 @@ function Moderation(props) {
       setGame((game) => ({ ...game, currentRound: currentRound }));
       setRedirect(data);
     });
+
+    return () => {
+      //onUnmount do clean-up events here
+      socket.off("otherUserWords");
+      socket.off("otherUserVoted");
+      socket.off("moderationEnded");
+    };
   }, []);
 
   useEffect(() => {
@@ -91,7 +98,6 @@ function Moderation(props) {
     });
 
     if (numVotesByCat >= minNumVotes) {
-      console.log("all players voted", numVotesByCat, minNumVotes);
       _.delay(updateCat, 2000);
     }
   }, [wordVotes]);

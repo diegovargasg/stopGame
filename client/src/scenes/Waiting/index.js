@@ -26,9 +26,6 @@ function Waiting(props) {
       return;
     }
     setSocket(socketIOClient());
-    return () => {
-      //onUnmount do clean-up events here
-    };
   }, []);
 
   useEffect(() => {
@@ -45,15 +42,12 @@ function Waiting(props) {
     });
 
     socket.on("allUsers", (data) => {
-      console.log(data);
       const localPlayer = _.find(data, (player) => {
         return player.id === socket.id;
       });
       const remotePlayers = _.filter(data, (player) => {
         return player.id !== socket.id;
       });
-      console.log("remotePlayers", remotePlayers);
-      console.log("localPlayers", localPlayer);
       setRemotePlayers(remotePlayers);
       setLocalPlayer(localPlayer);
     });
@@ -88,6 +82,13 @@ function Waiting(props) {
         rounds: data.rounds,
       }));
     });
+
+    return () => {
+      socket.off("gameData");
+      socket.off("startGame");
+      socket.off("allUsers");
+      socket.off("joinGame");
+    };
   }, [socket]);
 
   const handleReady = () => {
