@@ -14,6 +14,8 @@ import { GameContext } from "../../GameContext";
 import { LocalPlayerContext } from "../../LocalPlayerContext";
 
 function Moderation(props) {
+  const localPlayerGameData = _.get(props, "location.state.gameData", {});
+
   const [game, setGame] = useContext(GameContext);
   const [socket, setSocket] = useContext(SocketContext);
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
@@ -22,9 +24,16 @@ function Moderation(props) {
   const [redirect, setRedirect] = useState(false);
   const [activeCat, setActiveCat] = useState(0);
   const [wordVotes, setWordVotes] = useState({});
-  const [gameData, setGameData] = useState({});
-
-  const localPlayerGameData = _.get(props, "location.state.gameData", {});
+  const [gameData, setGameData] = useState(() => {
+    const newGameData = {};
+    const currentLetter = game.letters[game.currentRound];
+    _.set(newGameData, `${localPlayer.id}-${currentLetter}`, {
+      playerId: localPlayer.id,
+      name: localPlayer.name,
+      words: localPlayerGameData.words,
+    });
+    return newGameData;
+  });
 
   useEffect(() => {
     if (socket === null || game.id === "") {
@@ -41,17 +50,6 @@ function Moderation(props) {
 
     const currentLetter = game.letters[game.currentRound];
     setLetter(currentLetter);
-
-    //Sets localPlayer GameData
-    setGameData((gameData) => {
-      const newGameData = _.cloneDeep(gameData);
-      _.set(newGameData, `${localPlayer.id}-${currentLetter}`, {
-        playerId: localPlayer.id,
-        name: localPlayer.name,
-        words: localPlayerGameData.words,
-      });
-      return newGameData;
-    });
 
     socket.on("otherUserWords", (otherUserData) => {
       setGameData((gameData) => {

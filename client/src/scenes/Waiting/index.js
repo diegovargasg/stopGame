@@ -83,6 +83,7 @@ function Waiting(props) {
       }));
     });
 
+    //Unmount cleaup
     return () => {
       socket.off("gameData");
       socket.off("startGame");
