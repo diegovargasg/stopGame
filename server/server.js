@@ -33,9 +33,9 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
-const getMainData = (socket) => {
+const getMainData = async (socket) => {
   const id = socket.id;
-  const user = getUser(id);
+  const user = await getUser(id);
   const gameId = _.get(user, "gameId", "");
   return { id, user, gameId };
 };
@@ -44,7 +44,7 @@ const getMainData = (socket) => {
 io.on("connection", (socket) => {
   console.log(`user connected ${socket.id}`);
   //User has joined a game
-  socket.on("joinGame", (data) => {
+  socket.on("joinGame", async (data) => {
     const gameId = _.get(data, "id", "");
     const name = _.capitalize(_.get(data, "name", ""));
     const categories = _.get(data, "categories", []);
@@ -53,8 +53,12 @@ io.on("connection", (socket) => {
     const ready = false;
     const points = {};
     const id = socket.id;
+
     //update list of players of that game id
-    addUser({ id, gameId, name, ready, points });
+    const addUserResp = await addUser({ id, gameId, name, ready, points });
+    /* if (addUserResp.status !== 201) {
+      //failed to add the user
+    } */
 
     if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
       //Is a joiner and needs the categories
@@ -75,7 +79,6 @@ io.on("connection", (socket) => {
     removeGameById(gameId);
   });
 
-  //@TODO: stop the game when everyone left
   socket.on("disconnect", () => {
     const mainData = getMainData(socket);
     removeUser(mainData.id);
@@ -98,10 +101,11 @@ io.on("connection", (socket) => {
   });
 
   //user is ready
-  socket.on("userReady", (ready) => {
+  socket.on("userReady", async (ready) => {
     const mainData = getMainData(socket);
 
-    updateUserReady(mainData.id, ready);
+    const resp = await updateUserReady(mainData.id, ready);
+    console.log(resp);
 
     io.to(mainData.gameId).emit(
       "allUsers",
