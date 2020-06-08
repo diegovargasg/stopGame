@@ -8,7 +8,7 @@ exports.handler = async (event, context) => {
   let responseBody = "";
   let statusCode = 0;
 
-  const { gameId, ready } = JSON.parse(event.body);
+  const { gameId } = event.pathParameters;
 
   const params = {
     TableName: "players",
@@ -20,28 +20,19 @@ exports.handler = async (event, context) => {
 
   try {
     const data = await documentClient.scan(params).promise();
-    const itemsPromises = [];
+    let itemPromise = null;
 
     if (data.Count > 0) {
-      itemsPromises = data.Items.map(async (item) => {
-        const updateParams = {
+      itemPromise = data.Items.map(async (item) => {
+        const deleteParams = {
           TableName: "players",
           Key: {
             id: item.id,
           },
-          UpdateExpression: "SET #ready = :newReady",
-          ExpressionAttributeValues: {
-            ":newReady": ready,
-          },
-          ExpressionAttributeNames: {
-            "#ready": "ready",
-          },
-          ReturnValues: "UPDATED_NEW",
         };
-        return await documentClient.update(updateParams).promise();
+        return await documentClient.delete(deleteParams).promise();
       });
-
-      responseBody = await Promise.all(itemsPromises);
+      responseBody = await Promise.all(itemPromise);
     }
     statusCode = 201;
   } catch (error) {

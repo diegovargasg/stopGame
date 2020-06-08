@@ -47,7 +47,13 @@ async function getAllUsersByGameId(gameId) {
   });
 }
 
-function removeAllUsersByGameId(gameId) {
+async function removeAllUsersByGameId(gameId) {
+  try {
+    const response = await axiosObj.delete(`/players/${gameId}`);
+    return response.data.Item;
+  } catch (error) {
+    return error;
+  }
   return _.remove(allUsers, (user) => {
     return user.gameId === gameId;
   });

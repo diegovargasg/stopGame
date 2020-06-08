@@ -25,7 +25,11 @@ function Waiting(props) {
       props.history.push("/");
       return;
     }
-    setSocket(socketIOClient());
+    setSocket(
+      socketIOClient(
+        "http://ec2-54-93-250-9.eu-central-1.compute.amazonaws.com:5000"
+      )
+    );
   }, []);
 
   useEffect(() => {
