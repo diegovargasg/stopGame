@@ -11,9 +11,9 @@ const {
   removeUser,
   getAllUsersByGameId,
   removeAllUsersByGameId,
-  updateUserReady,
+  updateUser,
   allUsersReady,
-  unReadyAllUsersByGameId,
+  updateAllUsersByGameId,
 } = require("./utils/users");
 
 const {
@@ -55,10 +55,7 @@ io.on("connection", (socket) => {
     const id = socket.id;
 
     //update list of players of that game id
-    const addUserResp = await addUser({ id, gameId, name, ready, points });
-    /* if (addUserResp.status !== 201) {
-      //failed to add the user
-    } */
+    await addUser({ id, gameId, name, ready, points });
 
     if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
       //Is a joiner and needs the categories
@@ -71,49 +68,47 @@ io.on("connection", (socket) => {
     }
 
     socket.join(gameId);
-    io.to(gameId).emit("allUsers", getAllUsersByGameId(gameId));
+    const allUsersByGameId = await getAllUsersByGameId(gameId);
+    io.to(gameId).emit("allUsers", allUsersByGameId);
   });
 
-  socket.on("cleanGame", (gameId) => {
-    removeAllUsersByGameId(gameId);
+  socket.on("cleanGame", async (gameId) => {
+    await removeAllUsersByGameId(gameId);
     removeGameById(gameId);
   });
 
-  socket.on("disconnect", () => {
-    const mainData = getMainData(socket);
-    removeUser(mainData.id);
-    unReadyAllUsersByGameId(mainData.gameId);
+  socket.on("disconnect", async () => {
+    const mainData = await getMainData(socket);
+    await removeUser(mainData.id);
+    await updateAllUsersByGameId({ gameId: mainData.gameId, ready: false });
 
-    io.to(mainData.gameId).emit(
-      "allUsers",
-      getAllUsersByGameId(mainData.gameId)
-    );
+    const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
+    console.log("allUsersByGameId", allUsersByGameId);
+    io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
     console.log(`user disconneted ${mainData.id}`);
 
     //All the users left, clean up in case the game has already started
     const gameData = getGameDataById(mainData.gameId);
-    if (_.size(getAllUsersByGameId(mainData.gameId)) <= 1 && gameData.started) {
+    if (_.size(allUsersByGameId) <= 1 && gameData.started) {
       //Emit message to disconnect all possible remaining users
       io.to(mainData.gameId).emit("fatalError", "All your opponents left");
-      removeAllUsersByGameId(mainData.gameId);
+      await removeAllUsersByGameId(mainData.gameId);
       removeGameById(mainData.gameId);
     }
   });
 
   //user is ready
   socket.on("userReady", async (ready) => {
-    const mainData = getMainData(socket);
+    const mainData = await getMainData(socket);
 
-    const resp = await updateUserReady(mainData.id, ready);
-    console.log(resp);
+    await updateUser(mainData.id, ready);
+    const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
 
-    io.to(mainData.gameId).emit(
-      "allUsers",
-      getAllUsersByGameId(mainData.gameId)
-    );
+    io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
 
     console.log(`user is ready ${mainData.id}`);
-    if (allUsersReady(mainData.gameId)) {
+    const areAllUsersReady = await allUsersReady(mainData.gameId);
+    if (areAllUsersReady) {
       io.to(mainData.gameId).emit("startGame", true);
       startGameById(mainData.gameId);
       console.log("all users are ready");
@@ -121,34 +116,34 @@ io.on("connection", (socket) => {
   });
 
   //User finished all words
-  socket.on("userFinished", (data) => {
-    const mainData = getMainData(socket);
+  socket.on("userFinished", async (data) => {
+    const mainData = await getMainData(socket);
     io.to(mainData.gameId).emit("gameEnded", mainData.id);
     console.log("User finished the game", mainData.id);
   });
 
   //Sent all the users answers
-  socket.on("userWords", (data) => {
+  socket.on("userWords", async (data) => {
     console.log("send to the rest of users", data);
-    const mainData = getMainData(socket);
+    const mainData = await getMainData(socket);
     socket.broadcast.to(mainData.gameId).emit("otherUserWords", data);
   });
 
-  socket.on("userVotes", (data) => {
+  socket.on("userVotes", async (data) => {
     console.log("votes", data);
-    const mainData = getMainData(socket);
+    const mainData = await getMainData(socket);
     socket.broadcast.to(mainData.gameId).emit("otherUserVoted", data);
   });
 
-  socket.on("moderationEnded", (data) => {
+  socket.on("moderationEnded", async (data) => {
     console.log("moderation Finished");
-    const mainData = getMainData(socket);
+    const mainData = await getMainData(socket);
     io.to(mainData.gameId).emit("moderationEnded", data);
   });
 
-  socket.on("resultsContinue", (data) => {
+  socket.on("resultsContinue", async (data) => {
     console.log("results ended");
-    const mainData = getMainData(socket);
+    const mainData = await getMainData(socket);
     io.to(mainData.gameId).emit("resultsContinue", data);
   });
 });

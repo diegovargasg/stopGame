@@ -27,7 +27,8 @@ function Waiting(props) {
     }
     setSocket(
       socketIOClient(
-        "http://ec2-54-93-250-9.eu-central-1.compute.amazonaws.com:5000"
+        //"http://ec2-54-93-250-9.eu-central-1.compute.amazonaws.com:5000"
+        "http://localhost:5000"
       )
     );
   }, []);
