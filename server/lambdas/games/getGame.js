@@ -8,30 +8,21 @@ exports.handler = async (event, context) => {
   let responseBody = "";
   let statusCode = 0;
 
-  const { ready } = JSON.parse(event.body);
   const { id } = event.pathParameters;
 
   const params = {
-    TableName: "players",
+    TableName: "games",
     Key: {
       id: id,
     },
-    UpdateExpression: "SET #ready = :newReady",
-    ExpressionAttributeValues: {
-      ":newReady": ready,
-    },
-    ExpressionAttributeNames: {
-      "#ready": "ready",
-    },
-    ReturnValues: "UPDATED_NEW",
   };
 
   try {
-    const data = await documentClient.update(params).promise();
+    const data = await documentClient.get(params).promise();
     responseBody = JSON.stringify(data);
-    statusCode = 201;
+    statusCode = 200;
   } catch (error) {
-    responseBody = `unable to update player ${error}`;
+    responseBody = `unable to get player ${error}`;
     statusCode = 403;
   }
 

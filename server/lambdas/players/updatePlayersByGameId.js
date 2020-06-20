@@ -8,7 +8,8 @@ exports.handler = async (event, context) => {
   let responseBody = "";
   let statusCode = 0;
 
-  const { gameId, ready } = JSON.parse(event.body);
+  const { ready } = JSON.parse(event.body);
+  const { gameId } = event.pathParameters;
 
   const params = {
     TableName: "players",

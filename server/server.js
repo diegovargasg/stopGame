@@ -20,7 +20,7 @@ const {
   addGame,
   getGameDataById,
   removeGameById,
-  startGameById,
+  updateGameById,
 } = require("./utils/games");
 
 const app = express();
@@ -54,19 +54,18 @@ io.on("connection", (socket) => {
     const letters = _.get(data, "letters", []);
     const rounds = _.get(data, "rounds", 0);
     const ready = false;
-    const points = {};
     const id = socket.id;
 
     try {
       //update list of players of that game id
-      await addUser({ id, gameId, name, ready, points });
-
+      await addUser({ id, gameId, name, ready });
       if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
         //Is a joiner and needs the categories
-        socket.emit("gameData", getGameDataById(gameId));
+        const gameData = await getGameDataById(gameId);
+        socket.emit("gameData", gameData);
       } else {
         //Is the creator, store the game gategories and letters
-        addGame({ gameId, categories, letters, rounds });
+        await addGame({ id: gameId, categories, letters, rounds });
       }
 
       socket.join(gameId);
@@ -80,7 +79,7 @@ io.on("connection", (socket) => {
   socket.on("cleanGame", async (gameId) => {
     try {
       await removeAllUsersByGameId(gameId);
-      removeGameById(gameId);
+      await removeGameById(gameId);
     } catch (error) {
       return error;
     }
@@ -99,9 +98,10 @@ io.on("connection", (socket) => {
       const gameData = getGameDataById(mainData.gameId);
       if (_.size(allUsersByGameId) <= 1 && gameData.started) {
         //Emit message to disconnect all possible remaining users
-        io.to(mainData.gameId).emit("fatalError", "All your opponents left");
         await removeAllUsersByGameId(mainData.gameId);
-        removeGameById(mainData.gameId);
+        io.to(mainData.gameId).emit("fatalError", "All your opponents left");
+      } else if (_.size(allUsersByGameId) === 0) {
+        await removeGameById(mainData.gameId);
       }
     } catch (error) {
       return error;
@@ -120,8 +120,8 @@ io.on("connection", (socket) => {
 
       const areAllUsersReady = await allUsersReady(mainData.gameId);
       if (areAllUsersReady) {
+        await updateGameById(mainData.gameId, true);
         io.to(mainData.gameId).emit("startGame", true);
-        startGameById(mainData.gameId);
       }
     } catch (error) {
       return error;

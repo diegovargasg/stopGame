@@ -8,14 +8,13 @@ const axiosObj = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-async function addUser({ id, gameId, name, ready, points }) {
+async function addUser({ id, gameId, name, ready }) {
   try {
     const response = await axiosObj.post(`/player/${id}`, {
       id,
       gameId,
       name,
       ready,
-      points,
     });
     return response;
   } catch (error) {
@@ -26,7 +25,6 @@ async function addUser({ id, gameId, name, ready, points }) {
 async function getUser(id) {
   try {
     const response = await axiosObj.get(`/player/${id}`);
-    console.log(response.data.Item);
     return response.data.Item;
   } catch (error) {
     return error;
@@ -62,7 +60,6 @@ async function removeUser(id) {
 async function updateUser(id, ready) {
   try {
     const response = await axiosObj.patch(`/player/${id}`, {
-      id,
       ready,
     });
     return response;

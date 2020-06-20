@@ -8,20 +8,20 @@ exports.handler = async (event, context) => {
   let responseBody = "";
   let statusCode = 0;
 
-  const { ready } = JSON.parse(event.body);
+  const { started } = JSON.parse(event.body);
   const { id } = event.pathParameters;
 
   const params = {
-    TableName: "players",
+    TableName: "games",
     Key: {
       id: id,
     },
-    UpdateExpression: "SET #ready = :newReady",
+    UpdateExpression: "SET #started = :started",
     ExpressionAttributeValues: {
-      ":newReady": ready,
+      ":started": started,
     },
     ExpressionAttributeNames: {
-      "#ready": "ready",
+      "#started": "started",
     },
     ReturnValues: "UPDATED_NEW",
   };
@@ -31,7 +31,7 @@ exports.handler = async (event, context) => {
     responseBody = JSON.stringify(data);
     statusCode = 201;
   } catch (error) {
-    responseBody = `unable to update player ${error}`;
+    responseBody = `unable to update game ${error}`;
     statusCode = 403;
   }
 
