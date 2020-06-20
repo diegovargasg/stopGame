@@ -34,15 +34,18 @@ app.get("*", (req, res) => {
 });
 
 const getMainData = async (socket) => {
-  const id = socket.id;
-  const user = await getUser(id);
-  const gameId = _.get(user, "gameId", "");
-  return { id, user, gameId };
+  try {
+    const id = socket.id;
+    const user = await getUser(id);
+    const gameId = _.get(user, "gameId", "");
+    return { id, user, gameId };
+  } catch (error) {
+    return error;
+  }
 };
 
 //Run when client connects
 io.on("connection", (socket) => {
-  console.log(`user connected ${socket.id}`);
   //User has joined a game
   socket.on("joinGame", async (data) => {
     const gameId = _.get(data, "id", "");
@@ -54,97 +57,122 @@ io.on("connection", (socket) => {
     const points = {};
     const id = socket.id;
 
-    //update list of players of that game id
-    await addUser({ id, gameId, name, ready, points });
+    try {
+      //update list of players of that game id
+      await addUser({ id, gameId, name, ready, points });
 
-    if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
-      //Is a joiner and needs the categories
-      console.log("gameData sent to joiner", gameId, getGameDataById(gameId));
-      socket.emit("gameData", getGameDataById(gameId));
-    } else {
-      //Is the creator, store the game gategories and letters
-      console.log("game created", { gameId, categories, letters, rounds });
-      addGame({ gameId, categories, letters, rounds });
+      if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
+        //Is a joiner and needs the categories
+        socket.emit("gameData", getGameDataById(gameId));
+      } else {
+        //Is the creator, store the game gategories and letters
+        addGame({ gameId, categories, letters, rounds });
+      }
+
+      socket.join(gameId);
+      const allUsersByGameId = await getAllUsersByGameId(gameId);
+      io.to(gameId).emit("allUsers", allUsersByGameId);
+    } catch (error) {
+      return error;
     }
-
-    socket.join(gameId);
-    const allUsersByGameId = await getAllUsersByGameId(gameId);
-    io.to(gameId).emit("allUsers", allUsersByGameId);
   });
 
   socket.on("cleanGame", async (gameId) => {
-    await removeAllUsersByGameId(gameId);
-    removeGameById(gameId);
+    try {
+      await removeAllUsersByGameId(gameId);
+      removeGameById(gameId);
+    } catch (error) {
+      return error;
+    }
   });
 
   socket.on("disconnect", async () => {
-    const mainData = await getMainData(socket);
-    await removeUser(mainData.id);
-    await updateAllUsersByGameId({ gameId: mainData.gameId, ready: false });
+    try {
+      const mainData = await getMainData(socket);
+      await removeUser(mainData.id);
+      await updateAllUsersByGameId({ gameId: mainData.gameId, ready: false });
 
-    const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
-    console.log("allUsersByGameId", allUsersByGameId);
-    io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
-    console.log(`user disconneted ${mainData.id}`);
+      const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
+      io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
 
-    //All the users left, clean up in case the game has already started
-    const gameData = getGameDataById(mainData.gameId);
-    if (_.size(allUsersByGameId) <= 1 && gameData.started) {
-      //Emit message to disconnect all possible remaining users
-      io.to(mainData.gameId).emit("fatalError", "All your opponents left");
-      await removeAllUsersByGameId(mainData.gameId);
-      removeGameById(mainData.gameId);
+      //All the users left, clean up in case the game has already started
+      const gameData = getGameDataById(mainData.gameId);
+      if (_.size(allUsersByGameId) <= 1 && gameData.started) {
+        //Emit message to disconnect all possible remaining users
+        io.to(mainData.gameId).emit("fatalError", "All your opponents left");
+        await removeAllUsersByGameId(mainData.gameId);
+        removeGameById(mainData.gameId);
+      }
+    } catch (error) {
+      return error;
     }
   });
 
   //user is ready
   socket.on("userReady", async (ready) => {
-    const mainData = await getMainData(socket);
+    try {
+      const mainData = await getMainData(socket);
 
-    await updateUser(mainData.id, ready);
-    const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
+      await updateUser(mainData.id, ready);
+      const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
 
-    io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
+      io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
 
-    console.log(`user is ready ${mainData.id}`);
-    const areAllUsersReady = await allUsersReady(mainData.gameId);
-    if (areAllUsersReady) {
-      io.to(mainData.gameId).emit("startGame", true);
-      startGameById(mainData.gameId);
-      console.log("all users are ready");
+      const areAllUsersReady = await allUsersReady(mainData.gameId);
+      if (areAllUsersReady) {
+        io.to(mainData.gameId).emit("startGame", true);
+        startGameById(mainData.gameId);
+      }
+    } catch (error) {
+      return error;
     }
   });
 
   //User finished all words
   socket.on("userFinished", async (data) => {
-    const mainData = await getMainData(socket);
-    io.to(mainData.gameId).emit("gameEnded", mainData.id);
-    console.log("User finished the game", mainData.id);
+    try {
+      const mainData = await getMainData(socket);
+      io.to(mainData.gameId).emit("gameEnded", mainData.id);
+    } catch (error) {
+      return error;
+    }
   });
 
   //Sent all the users answers
   socket.on("userWords", async (data) => {
-    console.log("send to the rest of users", data);
-    const mainData = await getMainData(socket);
-    socket.broadcast.to(mainData.gameId).emit("otherUserWords", data);
+    try {
+      const mainData = await getMainData(socket);
+      socket.broadcast.to(mainData.gameId).emit("otherUserWords", data);
+    } catch (error) {
+      return error;
+    }
   });
 
   socket.on("userVotes", async (data) => {
-    console.log("votes", data);
-    const mainData = await getMainData(socket);
-    socket.broadcast.to(mainData.gameId).emit("otherUserVoted", data);
+    try {
+      const mainData = await getMainData(socket);
+      socket.broadcast.to(mainData.gameId).emit("otherUserVoted", data);
+    } catch (error) {
+      return error;
+    }
   });
 
   socket.on("moderationEnded", async (data) => {
-    console.log("moderation Finished");
-    const mainData = await getMainData(socket);
-    io.to(mainData.gameId).emit("moderationEnded", data);
+    try {
+      const mainData = await getMainData(socket);
+      io.to(mainData.gameId).emit("moderationEnded", data);
+    } catch (error) {
+      return error;
+    }
   });
 
   socket.on("resultsContinue", async (data) => {
-    console.log("results ended");
-    const mainData = await getMainData(socket);
-    io.to(mainData.gameId).emit("resultsContinue", data);
+    try {
+      const mainData = await getMainData(socket);
+      io.to(mainData.gameId).emit("resultsContinue", data);
+    } catch (error) {
+      return error;
+    }
   });
 });
 
