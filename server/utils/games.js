@@ -7,10 +7,7 @@ const axiosObj = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-const allGames = [];
-
 async function addGame({ id, categories, letters, rounds }) {
-  allGames.push({ id, categories, letters, rounds, started: false });
   try {
     const response = await axiosObj.post(`/game/${id}`, {
       id,
@@ -26,10 +23,6 @@ async function addGame({ id, categories, letters, rounds }) {
 }
 
 async function getGameDataById(id) {
-  /* const game = _.find(allGames, (game) => {
-    return game.id === id;
-  });
- */
   try {
     const response = await axiosObj.get(`/game/${id}`);
 
@@ -50,19 +43,9 @@ async function getGameDataById(id) {
   } catch (error) {
     return error;
   }
-
-  return {
-    categories: _.get(game, "categories", []),
-    letters: _.get(game, "letters", []),
-    rounds: _.get(game, "rounds", 0),
-    started: _.get(game, "started", false),
-  };
 }
 
 async function removeGameById(id) {
-  _.remove(allGames, (game) => {
-    return game.id === id;
-  });
   try {
     const response = await axiosObj.delete(`/game/${id}`);
     return response;
@@ -80,9 +63,19 @@ async function updateGameById(id, started) {
   }
 }
 
+async function deleteAllGames() {
+  try {
+    const response = await axiosObj.delete(`/games`);
+    return response;
+  } catch (error) {
+    return error;
+  }
+}
+
 module.exports = {
   addGame,
   getGameDataById,
   removeGameById,
   updateGameById,
+  deleteAllGames,
 };

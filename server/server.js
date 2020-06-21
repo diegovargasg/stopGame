@@ -14,6 +14,7 @@ const {
   updateUser,
   allUsersReady,
   updateAllUsersByGameId,
+  deleteAllPlayers,
 } = require("./utils/users");
 
 const {
@@ -21,6 +22,7 @@ const {
   getGameDataById,
   removeGameById,
   updateGameById,
+  deleteAllGames,
 } = require("./utils/games");
 
 const app = express();
@@ -44,6 +46,14 @@ const getMainData = async (socket) => {
   }
 };
 
+const destroyGameAndPlayers = async (gameId) => {
+  try {
+    Promise.all([removeAllUsersByGameId(gameId), removeGameById(gameId)]);
+  } catch (error) {
+    return error;
+  }
+};
+
 //Run when client connects
 io.on("connection", (socket) => {
   //User has joined a game
@@ -58,7 +68,14 @@ io.on("connection", (socket) => {
 
     try {
       //update list of players of that game id
-      await addUser({ id, gameId, name, ready });
+      const response = await addUser({ id, gameId, name, ready });
+      socket.join(gameId);
+
+      //If the user was not created
+      if (response.status !== 201) {
+        throw "problem creating the player";
+      }
+
       if (_.isEmpty(categories) || _.isEmpty(letters) || rounds === 0) {
         //Is a joiner and needs the categories
         const gameData = await getGameDataById(gameId);
@@ -68,7 +85,6 @@ io.on("connection", (socket) => {
         await addGame({ id: gameId, categories, letters, rounds });
       }
 
-      socket.join(gameId);
       const allUsersByGameId = await getAllUsersByGameId(gameId);
       io.to(gameId).emit("allUsers", allUsersByGameId);
     } catch (error) {
@@ -76,10 +92,10 @@ io.on("connection", (socket) => {
     }
   });
 
+  //used when the game finished
   socket.on("cleanGame", async (gameId) => {
     try {
-      await removeAllUsersByGameId(gameId);
-      await removeGameById(gameId);
+      await destroyGameUsers(gameId);
     } catch (error) {
       return error;
     }
@@ -88,22 +104,27 @@ io.on("connection", (socket) => {
   socket.on("disconnect", async () => {
     try {
       const mainData = await getMainData(socket);
-      await removeUser(mainData.id);
-      await updateAllUsersByGameId({ gameId: mainData.gameId, ready: false });
 
-      const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
-      io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
+      await Promise.all([
+        removeUser(mainData.id),
+        updateAllUsersByGameId({ gameId: mainData.gameId, ready: false }),
+      ]);
 
-      //All the users left, clean up in case the game has already started
-      const gameData = getGameDataById(mainData.gameId);
-      if (_.size(allUsersByGameId) <= 1 && gameData.started) {
-        //Emit message to disconnect all possible remaining users
-        await removeAllUsersByGameId(mainData.gameId);
+      const [allUsersByGameId, gameData] = await Promise.all([
+        getAllUsersByGameId(mainData.gameId),
+        getGameDataById(mainData.gameId),
+      ]);
+
+      if (_.size(allUsersByGameId) > 1) {
+        //someone left and the game hasn't started
+        io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
+      } else if (_.size(allUsersByGameId) <= 1 && gameData.started) {
+        //everyone left and the game has already started
+        await destroyGameAndPlayers(mainData.gameId);
         io.to(mainData.gameId).emit("fatalError", "All your opponents left");
-      } else if (_.size(allUsersByGameId) === 0) {
-        await removeGameById(mainData.gameId);
       }
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -113,17 +134,23 @@ io.on("connection", (socket) => {
     try {
       const mainData = await getMainData(socket);
 
-      await updateUser(mainData.id, ready);
+      const response = await updateUser(mainData.id, ready);
+      if (response.status !== 201) {
+        console.log(response);
+        throw "player update failed";
+      }
+
       const allUsersByGameId = await getAllUsersByGameId(mainData.gameId);
+      const areAllUsersReady = allUsersReady(allUsersByGameId);
 
-      io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
-
-      const areAllUsersReady = await allUsersReady(mainData.gameId);
       if (areAllUsersReady) {
         await updateGameById(mainData.gameId, true);
         io.to(mainData.gameId).emit("startGame", true);
+      } else {
+        io.to(mainData.gameId).emit("allUsers", allUsersByGameId);
       }
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -134,6 +161,7 @@ io.on("connection", (socket) => {
       const mainData = await getMainData(socket);
       io.to(mainData.gameId).emit("gameEnded", mainData.id);
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -144,6 +172,7 @@ io.on("connection", (socket) => {
       const mainData = await getMainData(socket);
       socket.broadcast.to(mainData.gameId).emit("otherUserWords", data);
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -153,6 +182,7 @@ io.on("connection", (socket) => {
       const mainData = await getMainData(socket);
       socket.broadcast.to(mainData.gameId).emit("otherUserVoted", data);
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -162,6 +192,7 @@ io.on("connection", (socket) => {
       const mainData = await getMainData(socket);
       io.to(mainData.gameId).emit("moderationEnded", data);
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
@@ -171,12 +202,18 @@ io.on("connection", (socket) => {
       const mainData = await getMainData(socket);
       io.to(mainData.gameId).emit("resultsContinue", data);
     } catch (error) {
+      console.log(error);
       return error;
     }
   });
 });
 
 //Runs server
-server.listen(port, () => {
-  console.log(`Server running in ${port}`);
+server.listen(port, async () => {
+  try {
+    await Promise.all([deleteAllGames(), deleteAllPlayers()]);
+    console.log(`Server running in ${port}`);
+  } catch (error) {
+    console.log(error);
+  }
 });

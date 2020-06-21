@@ -4,7 +4,6 @@ const axios = require("axios");
 
 const axiosObj = axios.create({
   baseURL: "https://b5l0f7pdee.execute-api.eu-central-1.amazonaws.com/prod",
-  timeout: 1000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -68,12 +67,11 @@ async function updateUser(id, ready) {
   }
 }
 
-async function allUsersReady(gameId) {
-  const allUsersByGameId = await getAllUsersByGameId(gameId);
+function allUsersReady(allUsersByGameId) {
   return (
     _.size(
       _.filter(allUsersByGameId, (user) => {
-        return user.gameId === gameId && user.ready === true;
+        return user.ready === true;
       })
     ) === allUsersByGameId.length
   );
@@ -90,6 +88,15 @@ async function updateAllUsersByGameId({ gameId, ready }) {
   }
 }
 
+async function deleteAllPlayers() {
+  try {
+    const response = await axiosObj.delete(`/players`);
+    return response;
+  } catch (error) {
+    return error;
+  }
+}
+
 module.exports = {
   getAllUsersByGameId,
   removeAllUsersByGameId,
@@ -99,4 +106,5 @@ module.exports = {
   updateUser,
   allUsersReady,
   updateAllUsersByGameId,
+  deleteAllPlayers,
 };

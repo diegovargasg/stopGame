@@ -10,7 +10,7 @@ function JoinGame() {
   const [valid, setValid] = useState(false);
   const [gameId, setGameId] = useState("");
   const [localPlayer, setLocalPlayer] = useContext(LocalPlayerContext);
-  const [name, setName] = useState("");
+  const [name, setName] = useState("camilo");
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
