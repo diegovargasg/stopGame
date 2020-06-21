@@ -16,12 +16,12 @@ function CreateGame() {
   const [rounds, setRounds] = useState(3);
   const [categories, setCategories] = useState([]);
   const [redirect, setRedirect] = useState(false);
-  const [name, setName] = useState("diego");
+  const [name, setName] = useState("");
   const [catAlert, setCatAlert] = useState(false);
 
   const handleSubmit = (event) => {
     const form = event.currentTarget;
-    if (form.checkValidity() === false || categories.length < 1) {
+    if (form.checkValidity() === false || categories.length < 5) {
       event.preventDefault();
       event.stopPropagation();
       setCatAlert(true);

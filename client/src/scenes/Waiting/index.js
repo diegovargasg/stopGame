@@ -47,7 +47,6 @@ function Waiting(props) {
     });
 
     socket.on("allUsers", (data) => {
-      console.log(data);
       const localPlayer = _.find(data, (player) => {
         return player.id === socket.id;
       });
