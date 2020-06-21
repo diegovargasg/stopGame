@@ -41,8 +41,8 @@ function Moderation(props) {
       return;
     }
 
-    //sends to the rest of users localPlayer GameData
-    socket.emit("userWords", {
+    //sends to the rest of players localPlayer GameData
+    socket.emit("playerWords", {
       playerId: localPlayer.id,
       name: localPlayer.name,
       words: localPlayerGameData.words,
@@ -51,19 +51,19 @@ function Moderation(props) {
     const currentLetter = game.letters[game.currentRound];
     setLetter(currentLetter);
 
-    socket.on("otherUserWords", (otherUserData) => {
+    socket.on("otherPlayerWords", (otherPlayerData) => {
       setGameData((gameData) => {
         const newGameData = _.cloneDeep(gameData);
-        _.set(newGameData, `${otherUserData.playerId}-${currentLetter}`, {
-          playerId: otherUserData.playerId,
-          name: otherUserData.name,
-          words: otherUserData.words,
+        _.set(newGameData, `${otherPlayerData.playerId}-${currentLetter}`, {
+          playerId: otherPlayerData.playerId,
+          name: otherPlayerData.name,
+          words: otherPlayerData.words,
         });
         return newGameData;
       });
     });
 
-    socket.on("otherUserVoted", (data) => {
+    socket.on("otherPlayerVoted", (data) => {
       setWordVotes((wordVotes) => {
         const newVote = _.cloneDeep(wordVotes);
         _.set(newVote, `${data.id}.${data.category}.${data.voter}`, data.vote);
@@ -79,8 +79,8 @@ function Moderation(props) {
 
     return () => {
       //onUnmount do clean-up events here
-      socket.off("otherUserWords");
-      socket.off("otherUserVoted");
+      socket.off("otherPlayerWords");
+      socket.off("otherPlayerVoted");
       socket.off("moderationEnded");
     };
   }, []);
@@ -119,7 +119,7 @@ function Moderation(props) {
       return newVote;
     });
 
-    socket.emit("userVotes", {
+    socket.emit("playerVotes", {
       id,
       category,
       voter: localPlayer.id,

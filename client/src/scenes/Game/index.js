@@ -75,7 +75,7 @@ function Game(props) {
 
   const handleClick = () => {
     setStopBtnDisabled(true);
-    socket.emit("userFinished", true);
+    socket.emit("playerFinished", true);
   };
 
   const tableStyle = { marginTop: "1.5rem" };

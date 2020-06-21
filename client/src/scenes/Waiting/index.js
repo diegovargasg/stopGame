@@ -46,7 +46,7 @@ function Waiting(props) {
       rounds: game.rounds,
     });
 
-    socket.on("allUsers", (data) => {
+    socket.on("allPlayers", (data) => {
       const localPlayer = _.find(data, (player) => {
         return player.id === socket.id;
       });
@@ -92,13 +92,13 @@ function Waiting(props) {
     return () => {
       socket.off("gameData");
       socket.off("startGame");
-      socket.off("allUsers");
+      socket.off("allPlayers");
       socket.off("joinGame");
     };
   }, [socket]);
 
   const handleReady = () => {
-    socket.emit("userReady", !_.get(localPlayer, "ready", false));
+    socket.emit("playerReady", !_.get(localPlayer, "ready", false));
   };
 
   const styleUl = { margin: "1.5rem 0" };
