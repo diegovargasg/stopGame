@@ -7,7 +7,7 @@ const axiosObj = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-async function addUser({ id, gameId, name, ready }) {
+async function addPlayer({ id, gameId, name, ready }) {
   try {
     const response = await axiosObj.post(`/player/${id}`, {
       id,
@@ -21,7 +21,7 @@ async function addUser({ id, gameId, name, ready }) {
   }
 }
 
-async function getUser(id) {
+async function getPlayer(id) {
   try {
     const response = await axiosObj.get(`/player/${id}`);
     return response.data.Item;
@@ -30,7 +30,7 @@ async function getUser(id) {
   }
 }
 
-async function getAllUsersByGameId(gameId) {
+async function getAllPlayersByGameId(gameId) {
   try {
     const response = await axiosObj.get(`/players/${gameId}`);
     return response.data.Items;
@@ -39,7 +39,7 @@ async function getAllUsersByGameId(gameId) {
   }
 }
 
-async function removeAllUsersByGameId(gameId) {
+async function removeAllPlayersByGameId(gameId) {
   try {
     await axiosObj.delete(`/players/${gameId}`);
   } catch (error) {
@@ -47,7 +47,7 @@ async function removeAllUsersByGameId(gameId) {
   }
 }
 
-async function removeUser(id) {
+async function removePlayer(id) {
   try {
     const response = await axiosObj.delete(`/player/${id}`);
     return response;
@@ -56,7 +56,7 @@ async function removeUser(id) {
   }
 }
 
-async function updateUser(id, ready) {
+async function updatePlayer(id, ready) {
   try {
     const response = await axiosObj.patch(`/player/${id}`, {
       ready,
@@ -67,17 +67,17 @@ async function updateUser(id, ready) {
   }
 }
 
-function allUsersReady(allUsersByGameId) {
+function allPlayersReady(allPlayersByGameId) {
   return (
     _.size(
-      _.filter(allUsersByGameId, (user) => {
-        return user.ready === true;
+      _.filter(allPlayersByGameId, (player) => {
+        return player.ready === true;
       })
-    ) === allUsersByGameId.length
+    ) === allPlayersByGameId.length
   );
 }
 
-async function updateAllUsersByGameId({ gameId, ready }) {
+async function updateAllPlayersByGameId({ gameId, ready }) {
   try {
     const response = await axiosObj.put(`/players/${gameId}`, {
       ready: ready,
@@ -98,13 +98,13 @@ async function deleteAllPlayers() {
 }
 
 module.exports = {
-  getAllUsersByGameId,
-  removeAllUsersByGameId,
-  getUser,
-  addUser,
-  removeUser,
-  updateUser,
-  allUsersReady,
-  updateAllUsersByGameId,
+  getAllPlayersByGameId,
+  removeAllPlayersByGameId,
+  getPlayer,
+  addPlayer,
+  removePlayer,
+  updatePlayer,
+  allPlayersReady,
+  updateAllPlayersByGameId,
   deleteAllPlayers,
 };
