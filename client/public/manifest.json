@@ -1,6 +1,7 @@
 {
   "short_name": "Stop the game",
   "name": "Stop the game",
+  "description": "5 minutes .io game to play with friends",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#3d6889",
   "background_color": "#ffffff"
 }
