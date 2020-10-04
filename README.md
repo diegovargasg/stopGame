@@ -1,7 +1,6 @@
 # Stop the game!
 
-[![Build Status](https://img.shields.io/badge/Build-Pass-brightgreen)](https://github.com/diegovargasg/stopGame)
-[![License](https://img.shields.io/github/license/diegovargasg/stopGame)](https://github.com/diegovargasg/stopGame)
+[![Build Status](https://travis-ci.com/diegovargasg/stopGame.svg?branch=master)](https://travis-ci.com/diegovargasg/stopGame)
 
 
 "Stop the game" is a small Reactjs io game to play in real time with two or more people.
