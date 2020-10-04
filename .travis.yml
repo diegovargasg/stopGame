@@ -6,4 +6,4 @@ branches:
     - master
 warnings_are_errors: false
 script:
-  - npm run clientBuild
+  - CI=false npm run clientBuild
