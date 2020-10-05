@@ -4,6 +4,7 @@
   "description": "Stop game",
   "main": "index.js",
   "scripts": {
+    "serverTest": "cd server && npm install && npm test",
     "clientBuild": "cd client && npm install && npm run-script build",
     "start": "cd server && npm install &&  node server.js",
     "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"

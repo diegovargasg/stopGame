@@ -31,6 +31,11 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.static(path.join(__dirname, "../client/build")));
+
+app.get('/', function (req, res) {
+  res.status(200).send('ok');
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
@@ -217,3 +222,5 @@ server.listen(port, async () => {
     console.log(error);
   }
 });
+
+module.exports = server;

@@ -7,3 +7,4 @@ branches:
 warnings_are_errors: false
 script:
   - CI=false npm run clientBuild
+  - npm run serverTest
