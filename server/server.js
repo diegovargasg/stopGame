@@ -30,15 +30,17 @@ app.use(cors());
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.use(express.static(path.join(__dirname, "../client/build")));
+/*** THIS WOULD BE REPLACED WITH NGINX */
+/*app.use(express.static(path.join(__dirname, "../client/build")));
 
-app.get('/', function (req, res) {
-  res.status(200).send('ok');
+app.get("/", function (req, res) {
+  res.status(200).send("ok");
 });
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
+});*/
+/*** THIS WOULD BE REPLACED WITH NGINX */
 
 const getMainData = async (socket) => {
   try {
