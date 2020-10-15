@@ -1,10 +1,27 @@
-language: node_js
-node_js:
-  - "node"
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t diegovargasg/stopgame -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true diegovargasg/stopgame npm test -- --coverage
+  #- CI=false npm run clientBuild
+  #- npm run serverTest
+
+after_success:
+  - docker build -t diegovargasg/client ./client
+  - docker build -t diegovargasg/nginx ./nginx
+  - docker build -t diegovargasg/server ./server
+
+  #Login into the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push diegovargasg/client
+  - docker push diegovargasg/nginx
+  - docker push diegovargasg/server
 branches:
   only:
     - master
 warnings_are_errors: false
-script:
-  - CI=false npm run clientBuild
-  - npm run serverTest
